@@ -1,14 +1,28 @@
 import streamlit as st
 import random
 from datetime import datetime
-import json
 
-st.set_page_config(page_title="Maa Property 2026", layout="wide")
+st.set_page_config(page_title="Maa Property 2026", layout="centered")
 
-# डेटा को सेव रखने के लिए सेशन स्टेट
-if 'bills' not in st.session_state: st.session_state.bills = []
+# CSS: बिल के स्वरूप को साफ़ और सुंदर बनाने के लिए
+st.markdown("""
+<style>
+    .print-container { 
+        width: 100%; max-width: 450px; border: 3px solid #000; 
+        padding: 25px; margin: auto; font-family: 'Arial', sans-serif;
+        background-color: white; color: black;
+    }
+    .header { text-align: center; font-size: 28px; font-weight: bold; margin-bottom: 5px; }
+    .sub-header { text-align: center; font-size: 18px; margin-bottom: 15px; }
+    @media print {
+        body * { visibility: hidden; }
+        .printable-area, .printable-area * { visibility: visible; }
+        .printable-area { position: absolute; left: 0; top: 0; width: 100%; }
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# लॉगिन
+# लॉगिन सिस्टम
 if 'logged_in' not in st.session_state: st.session_state.logged_in = False
 if not st.session_state.logged_in:
     u = st.text_input("यूजर आईडी")
@@ -18,58 +32,58 @@ if not st.session_state.logged_in:
     st.stop()
 
 st.title("⚡ मां प्रॉपर्टी 2026")
+if st.button("🔒 लॉगआउट"): st.session_state.logged_in = False; st.rerun()
 
-# PDF जनरेटर फंक्शन (बिना किसी बाहरी लाइब्रेरी के - HTML के जरिए)
-def get_pdf_html(rb):
-    return f"""
-    <html><body>
-        <div style="border:2px solid #000; padding:20px; width:300px;">
-            <h2>MAA PROPERTIES</h2>
-            <p><b>Inv:</b> {rb['id']} | <b>Date:</b> {rb['date']}</p>
-            <hr>
-            <p><b>Property:</b> {rb['b_name']}</p>
-            <p><b>Buyer:</b> {rb['c_name']}</p>
-            <p><b>Total:</b> ₹{rb['base']} | <b>Due:</b> ₹{rb['due']}</p>
-        </div>
-    </body></html>
-    """
+# डेटा मैनेजमेंट
+if 'bills' not in st.session_state: st.session_state.bills = []
 
-# टैब्स
-t1, t2 = st.tabs(["➕ नई रसीद", "📜 हिस्ट्री/एडिट"])
+t1, t2 = st.tabs(["➕ नई रसीद", "📜 हिस्ट्री"])
 
 with t1:
     b_name = st.text_input("प्रॉपर्टी का नाम")
-    c_name = st.text_input("खरीदार")
+    c_name = st.text_input("खरीदार का नाम")
+    c_phone = st.text_input("खरीदार का मोबाइल नंबर")
     base = st.number_input("कुल राशि", value=0)
     adv = st.number_input("एडवांस", value=0)
-    if st.button("रसीद सेव करें"):
-        new_bill = {"id": random.randint(1000,9999), "b_name": b_name, "c_name": c_name, "base": base, "due": base-adv, "date": datetime.now().strftime('%d-%m-%Y')}
+    
+    if st.button("रसीद तैयार करें"):
+        new_bill = {
+            "id": random.randint(1000,9999), "b_name": b_name.upper(), 
+            "c_name": c_name.upper(), "c_phone": c_phone, 
+            "base": base, "due": base - adv, 
+            "date": datetime.now().strftime('%d-%m-%Y')
+        }
         st.session_state.bills.append(new_bill)
-        st.success("रसीद सेव हो गई!")
+        st.session_state.active_bill = new_bill
+        st.success("रसीद तैयार है!")
+
+# बिल का स्वरूप (जो प्रिंट होगा)
+if 'active_bill' in st.session_state:
+    rb = st.session_state.active_bill
+    st.markdown(f"""
+    <div class="printable-area print-container">
+        <div class="header">MAA PROPERTIES MUNGELI</div>
+        <div class="sub-header">Contact: +91 8109471091</div>
+        <hr>
+        <p><b>Invoice No:</b> {rb['id']} | <b>Date:</b> {rb['date']}</p>
+        <p><b>Property:</b> {rb['b_name']}</p>
+        <p><b>Buyer:</b> {rb['c_name']}</p>
+        <p><b>Buyer Mobile:</b> {rb['c_phone']}</p>
+        <p><b>Total Amount:</b> ₹{rb['base']:,}</p>
+        <p><b>Balance Due:</b> ₹{rb['due']:,}</p>
+        <br><br>
+        <div style="display:flex; justify-content: space-between; margin-top: 40px;">
+            <div>_______<br>Buyer Signature</div>
+            <div>_______<br>Seller Signature</div>
+        </div>
+        <br>
+        <div style="text-align:center; font-weight:bold; margin-top:20px;">
+            Proprietor: VISHAL GUPTA
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.info("🖨️ प्रिंट करने के लिए अपने कीबोर्ड पर Ctrl + P दबाएं।")
 
 with t2:
     for i, b in enumerate(st.session_state.bills):
-        col1, col2, col3 = st.columns([3, 1, 1])
-        col1.write(f"🆔 {b['id']} - {b['c_name']} (बाकी: ₹{b['due']})")
-        
-        # एडिट फंक्शन
-        if col2.button("✏️ एडिट", key=f"edit_{i}"):
-            st.session_state.edit_idx = i
-            
-        # डिलीट फंक्शन
-        if col3.button("🗑️ डिलीट", key=f"del_{i}"):
-            st.session_state.bills.pop(i)
-            st.rerun()
-
-    # एडिट फॉर्म
-    if 'edit_idx' in st.session_state:
-        idx = st.session_state.edit_idx
-        st.subheader("एडिट करें")
-        st.session_state.bills[idx]['c_name'] = st.text_input("नाम बदलें", value=st.session_state.bills[idx]['c_name'])
-        if st.button("सेव करें"): del st.session_state.edit_idx; st.rerun()
-
-    # PDF डाउनलोड का सेक्शन
-    st.divider()
-    st.subheader("📥 रसीद डाउनलोड करें")
-    for b in st.session_state.bills:
-        st.download_button(f"डाउनलोड रसीद {b['id']}", get_pdf_html(b), file_name=f"bill_{b['id']}.html", mime="text/html")
+        st.write(f"🆔 {b['id']} | 👤 {b['c_name']} | 🏢 {b['b_name']}")
