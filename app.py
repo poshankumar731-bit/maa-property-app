@@ -2,36 +2,12 @@ import streamlit as st
 import random
 from datetime import datetime
 
-# पेज लेआउट
+# पेज सेटअप
 st.set_page_config(page_title="Maa Property 2026", layout="centered")
-
-# CSS - रसीद को एक ही पेज पर फिक्स करने के लिए
-st.markdown("""
-<style>
-    .billing-app-invoice { 
-        background-color: #ffffff; color: #000000; padding: 20px; 
-        border: 2px solid #000; max-width: 400px; margin: 0 auto; 
-        font-family: sans-serif;
-    }
-    @media print {
-        body * { visibility: hidden; }
-        .printable-area, .printable-area * { visibility: visible; }
-        .printable-area { 
-            position: absolute; left: 0; top: 0; width: 100%; 
-            border: none !important; 
-        }
-        @page { size: A4 portrait; margin: 10mm; }
-    }
-</style>
-""", unsafe_allow_html=True)
 
 # लॉगिन सिस्टम
 USER_DATA = {"admin": "12345"}
-
 if 'logged_in' not in st.session_state: st.session_state.logged_in = False
-if 'bill_records' not in st.session_state: st.session_state.bill_records = []
-if 'active_bill' not in st.session_state: st.session_state.active_bill = None
-
 if not st.session_state.logged_in:
     st.subheader("🔐 लॉगिन करें")
     username = st.text_input("यूजरनेम")
@@ -42,7 +18,6 @@ if not st.session_state.logged_in:
             st.rerun()
     st.stop()
 
-# मुख्य ऐप
 st.title("⚡ मां प्रॉपर्टी 2026")
 if st.button("🔒 लॉगआउट"): st.session_state.logged_in = False; st.rerun()
 
@@ -58,33 +33,57 @@ with tab1:
     adv = st.number_input("एडवांस", value=0)
     
     if st.button("✨ रसीद जेनरेट करें"):
-        st.session_state.active_bill = {
+        bill_data = {
             "id": random.randint(1000, 9999), "b_name": b_name.upper(), "area": area, 
             "loc": loc.upper(), "c_name": c_name.upper(), "c_phone": c_phone, 
-            "base": base, "adv": adv, "due": base-adv
+            "base": base, "adv": adv, "due": base-adv, "date": datetime.now().strftime('%d-%m-%Y')
         }
-        st.session_state.bill_records.append(st.session_state.active_bill)
-
-    if st.session_state.active_bill:
-        rb = st.session_state.active_bill
-        st.markdown(f"""
-        <div class="printable-area billing-app-invoice">
-            <h3 style="text-align:center;">MAA PROPERTIES</h3>
-            <p style="font-size: 12px;"><b>Inv:</b> {rb['id']} | <b>Date:</b> {datetime.now().strftime('%d-%m-%Y')}</p>
-            <hr>
-            <p><b>Property:</b> {rb['b_name']}</p>
-            <p><b>Area:</b> {rb['area']} SqFt</p>
-            <p><b>Location:</b> {rb['loc']}</p>
-            <p><b>Buyer:</b> {rb['c_name']}</p>
-            <p><b>Mobile:</b> {rb['c_phone']}</p>
-            <p><b>Total:</b> ₹{rb['base']:,} | <b>Due:</b> ₹{rb['due']:,}</p>
-            <br><br>
-            <table width="100%"><tr><td>_______<br>Buyer</td><td align="right">_______<br>Seller</td></tr></table>
-        </div>
-        """, unsafe_allow_html=True)
-        st.info("🖨️ प्रिंट करने के लिए Ctrl + P दबाएं।")
+        
+        # नए पेज के लिए HTML (प्रिंट के लिए एकदम परफेक्ट)
+        html_code = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; display: flex; justify-content: center; padding: 20px; }}
+                .receipt {{ width: 100%; max-width: 400px; border: 2px solid #000; padding: 20px; }}
+                h2 {{ text-align: center; margin-top: 0; }}
+                .row {{ display: flex; justify-content: space-between; margin: 10px 0; }}
+            </style>
+        </head>
+        <body onload="window.print()">
+            <div class="receipt">
+                <h2>MAA PROPERTIES</h2>
+                <hr>
+                <p><b>Inv:</b> {bill_data['id']} | <b>Date:</b> {bill_data['date']}</p>
+                <p><b>Property:</b> {bill_data['b_name']}</p>
+                <p><b>Area:</b> {bill_data['area']} SqFt</p>
+                <p><b>Location:</b> {bill_data['loc']}</p>
+                <p><b>Buyer:</b> {bill_data['c_name']}</p>
+                <p><b>Mobile:</b> {bill_data['c_phone']}</p>
+                <hr>
+                <p><b>Total:</b> ₹{bill_data['base']:,}</p>
+                <p><b>Due:</b> ₹{bill_data['due']:,}</p>
+                <br><br>
+                <div style="display:flex; justify-content: space-between;">
+                    <span>_______<br>Buyer</span>
+                    <span>_______<br>Seller</span>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # नया टैब खोलने का तरीका
+        import base64
+        b64 = base64.b64encode(html_code.encode()).decode()
+        st.write(f'<a href="data:text/html;base64,{b64}" target="_blank" style="font-size:20px; color:green;">🖨️ रसीद नए पेज में खुल गई है! (यदि नहीं तो यहाँ क्लिक करें)</a>', unsafe_allow_html=True)
+        
+        if 'bill_records' not in st.session_state: st.session_state.bill_records = []
+        st.session_state.bill_records.append(bill_data)
 
 with tab2:
     st.subheader("📜 पिछले बिलों की हिस्ट्री")
-    for r in reversed(st.session_state.bill_records):
-        st.write(f"🆔 {r['id']} | 👤 {r['c_name']} | 🏢 {r['b_name']} | 🔴 बकाया: ₹{r['due']:,}")
+    if 'bill_records' in st.session_state:
+        for r in reversed(st.session_state.bill_records):
+            st.write(f"🆔 {r['id']} | 👤 {r['c_name']} | 🏢 {r['b_name']} | 🔴 बकाया: ₹{r['due']:,}")
