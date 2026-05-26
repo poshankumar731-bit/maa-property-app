@@ -3,42 +3,10 @@ import pandas as pd
 import random
 from datetime import datetime
 
-# 1. Page Configuration
+# 1. पेज कॉन्फ़िगरेशन
 st.set_page_config(page_title="मां प्रॉपर्टी डिजिटल ऐप 2026", layout="wide")
 
-# 2. Styling Rules & Printer Layout (No missing quotes)
-st.markdown("""
-<style>
-    .main { background-color: #0f111a; color: #ffffff; }
-    .stTabs [data-baseweb="tab"] { color: #8a99ad; font-weight: bold; font-size: 16px; }
-    .stTabs [data-baseweb="tab"][aria-selected="true"] { color: #00ffcc; border-bottom-color: #00ffcc; }
-    
-    /* Elegant Clean Receipt Box for Screen & Paper */
-    .invoice-container {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        padding: 25px;
-        border: 2px solid #000000;
-        border-radius: 4px;
-        font-family: 'Courier New', Courier, monospace;
-        max-width: 550px;
-        margin: 20px auto;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .invoice-container h2, .invoice-container h4, .invoice-container p, .invoice-container td {
-        color: #000000 !important;
-    }
-    
-    /* Print Command: Hides everything except the invoice card when printing */
-    @media print {
-        body * { visibility: hidden; background: white !important; }
-        .printable-area, .printable-area * { visibility: visible; }
-        .printable-area { position: absolute; left: 0; top: 0; width: 100%; border: none !important; box-shadow: none !important; }
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# 3. Persistent Memory Init
+# 2. डेटाबेस इनिशियलाइज़र (मेमोरी लॉक)
 if 'properties' not in st.session_state:
     st.session_state.properties = [
         {"id": "PROP-101", "name": "साईं रेजीडेंसी", "type": "प्लॉट (Plot)", "area": "1200 SqFt", "rate": "2500000", "location": "Sector 15, Lucknow", "owner": "राम कुमार"},
@@ -52,23 +20,23 @@ if 'bill_records' not in st.session_state:
 if 'active_bill' not in st.session_state:
     st.session_state.active_bill = None
 
-# Header
+# मुख्य टाइटल
 st.title("⚡ मां प्रॉपर्टी डिजिटल ऐप 2026")
 st.write("---")
 
-# Navigation Tabs
+# टैब नेविगेशन
 tab1, tab2, tab3 = st.tabs([
     "🔍 लाइव स्क्रीन (View Database)", 
     "➕ नई प्रॉपर्टी जोड़ें", 
     "💳 डिजिटल बिलिंग (Billing)"
 ])
 
-# ==================== TAB 1: VIEW & SAFELY DELETE ====================
+# ==================== टैब 1: लाइव स्क्रीन और डिलीट लॉजिक ====================
 with tab1:
     st.markdown("### 📱 आपकी लाइव स्क्रीन पर प्रॉपर्टीज")
     st.write("---")
     
-    # Safe copy loop generation
+    # लूप चलाकर सभी प्रॉपर्टीज को दिखाना
     for index, p in enumerate(list(st.session_state.properties)):
         col_info, col_del = st.columns([4, 1])
         
@@ -84,18 +52,18 @@ with tab1:
         with col_del:
             st.write(" ")
             st.write(" ")
-            # Fixed Dynamic ID for Deletion
-            if st.button("❌ डिलीट करें", key=f"del_{p['id']}_{index}"):
+            # हर प्रॉपर्टी के लिए एक यूनिक डिलीट बटन
+            if st.button("❌ डिलीट करें", key=f"del_item_{p['id']}_{index}"):
                 st.session_state.properties.pop(index)
-                st.warning(f"🗑️ {p['name']} को हटा दिया गया है!")
+                st.warning(f"🗑️ {p['name']} को सफलतापूर्वक हटा दिया गया है!")
                 st.rerun()
                 
         st.write("---")
 
-# ==================== TAB 2: ADD NEW PROPERTY ====================
+# ==================== टैब 2: नई प्रॉपर्टी एंट्री फॉर्म ====================
 with tab2:
     st.markdown("### ➕ नई प्रॉपर्टी एंट्री फॉर्म")
-    with st.form("new_property_submission_form", clear_on_submit=True):
+    with st.form("property_add_form", clear_on_submit=True):
         n = st.text_input("प्रॉपर्टी का नाम")
         t = st.selectbox("प्रकार", ["प्लॉट (Plot)", "मकान (House)", "दुकान (Shop)", "खेत (Agriculture)"])
         a = st.text_input("एरिया (जैसे: 1200 SqFt)")
@@ -114,13 +82,13 @@ with tab2:
                 st.session_state.properties.append({
                     "id": new_id, "name": n, "type": t, "area": a, "rate": str(price_parsed), "location": l, "owner": o
                 })
-                st.success(f"🎉 प्रॉपर्टी '{n}' डेटाबेेस में जोड़ दी गई है!")
+                st.success(f"🎉 प्रॉपर्टी '{n}' सफलतापूर्वक जोड़ दी गई है!")
                 st.balloons()
                 st.rerun()
             else:
-                st.error("प्रॉपर्टी का नाम और कीमत भरना जरूरी है!")
+                st.error("कृपया प्रॉपर्टी का नाम और कीमत भरना सुनिश्चित करें!")
 
-# ==================== TAB 3: BILLING & PAPER PRINT ====================
+# ==================== टैब 3: बिलिंग और सीधा प्रिंटर बटन ====================
 with tab3:
     st.markdown("### 💳 न्यू डिजिटल इनवॉइस जनरेटर")
     
@@ -137,7 +105,7 @@ with tab3:
         disc = st.number_input("6. डिस्काउंट / छूट (₹)", min_value=0, value=0, step=1000)
         adv = st.number_input("7. एडवांस पेमेंट / बयाना (₹)", min_value=0, value=100000, step=5000)
 
-    # Calculation logic
+    # कैलकुलेशन
     final_total = base_price - disc
     pending_amount = final_total - adv
     current_date = datetime.now().strftime('%d-%m-%Y')
@@ -158,20 +126,27 @@ with tab3:
             st.session_state.bill_records.append({
                 "रसीद ID": inv_id, "तारीख": current_date, "प्रॉपर्टी": b_name, "कस्टमर": c_name, "बकाया राशि": pending_amount
             })
-            st.success("✅ डिजिटल रसीद जनरेट हो चुकी है! नीचे प्रिंट आउट बटन दबाएं।")
+            st.success("✅ डिजिटल रसीद जनरेट हो चुकी है!")
 
-    # Render Screen Print Template Safely
+    # बिना किसी सिंटैक्स एरर के रसीद डिस्प्ले और प्रिंट
     if st.session_state.active_bill:
         rb = st.session_state.active_bill
         
-        # Real Hardware Printer Trigger Action Button
-        st.markdown("""
-            <div style="text-align: center; margin: 20px 0;">
-                <button onclick="window.print()" style="
-                    background-color: #00ffcc; 
-                    color: #000000; 
-                    font-size: 18px; 
-                    font-weight: bold; 
-                    padding: 12px 35px; 
-                    border: none; 
-                    border-radius: 4px;
+        st.write("### 🧾 जनरेटेड इनवॉइस")
+        
+        # प्रिंट ट्रिगर बटन
+        st.markdown('<button onclick="window.print()" style="background-color: #00ffcc; color: black; font-weight: bold; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">🖨️ रसीद सीधे प्रिंटर से प्रिंट करें</button>', unsafe_allow_html=True)
+        
+        # रसीद का साफ़-सुथरा लेआउट बॉक्स
+        st.info(f"📄 इनवॉइस नंबर: {rb['id']} | 📅 दिनांक: {rb['date']} | ⏰ समय: {rb['time']}")
+        
+        st.markdown(f"**🏢 प्रॉपर्टी:** {rb['b_name']} ({rb['b_loc']})")
+        st.markdown(f"**👤 ग्राहक:** {rb['c_name']} | 📞 **मोबाइल:** {rb['c_phone']}")
+        
+        st.write("---")
+        st.write(f"🔸 **मूल सौदा राशि:** ₹{rb['base']:,}.00")
+        st.write(f"🔸 **विशेष छूट (Discount):** ₹{rb['disc']:,}.00")
+        st.success(f"🔹 **कुल फाइनल सौदा मूल्य:** ₹{rb['total']:,}.00")
+        st.write(f"🟩 **प्राप्त एडवांस (बयाना):** ₹{rb['adv']:,}.00")
+        st.error(f"🔴 **कुल बकाया राशि (PENDING DUE):
+            
