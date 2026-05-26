@@ -3,23 +3,51 @@ import pandas as pd
 import random
 from datetime import datetime
 
-# Page Configuration
-st.set_page_config(page_title="मां प्रॉपर्टी ऐप 2026", layout="wide")
+# Page configuration for a professional layout
+st.set_page_config(page_title="मां प्रॉपर्टी डिजिटल क्लाउड ऐप 2026", layout="wide")
 
-# Internal Database
+# Modern Tech/Corporate Styling
+st.markdown("""
+<style>
+    .main { background-color: #0f111a; color: #ffffff; }
+    .stTabs [data-baseweb="tab"] { color: #8a99ad; font-weight: bold; }
+    .stTabs [data-baseweb="tab"][aria-selected="true"] { color: #00ffcc; border-bottom-color: #00ffcc; }
+    .print-container {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        padding: 25px;
+        border: 2px solid #222222;
+        border-radius: 6px;
+        font-family: 'Courier New', Courier, monospace;
+        max-width: 650px;
+        margin: 20px auto;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Main Databases in Session Memory (Simulated Cloud Backend)
 if 'properties' not in st.session_state:
     st.session_state.properties = [
         {"id": "PROP-101", "name": "साईं रेजीडेंसी", "type": "प्लॉट (Plot)", "area": "1200 SqFt", "rate": "2500000", "location": "Sector 15, Lucknow", "owner": "राम कुमार"},
         {"id": "PROP-102", "name": "गोकुल विला", "type": "मकान (House)", "area": "3 BHK", "rate": "6500000", "location": "Gomti Nagar", "owner": "S. K. Khan"}
     ]
 
-st.title("⚡ मां प्रॉपर्टी डिजिटल ऐप 2026")
+if 'bill_records' not in st.session_state:
+    st.session_state.bill_records = []
+
+# Top App Banner
+st.title("⚡ माँ प्रॉपर्टीज डिजिटल क्लाउड मैनेजमेंट")
 st.write("---")
 
-# Main Navigation Tabs
-tab1, tab2, tab3 = st.tabs(["🔍 लाइव स्क्रीन (View)", "➕ नई प्रॉपर्टी जोड़ें", "💳 डिजिटल बिलिंग (Billing)"])
+# Navigation Tabs
+tab1, tab2, tab3 = st.tabs([
+    "🔍 लाइव स्क्रीन (View Database)", 
+    "➕ नई प्रॉपर्टी जोड़ें", 
+    "💳 डिजिटल बिलिंग और रिकॉर्ड्स (Billing Panel)"
+])
 
-# TAB 1: LIVE DATABASE VIEW
+# TAB 1: LIVE DATABASE VIEW SCREEN
 with tab1:
     st.markdown("### 📱 आपकी लाइव स्क्रीन पर प्रॉपर्टीज")
     for p in st.session_state.properties:
@@ -27,20 +55,19 @@ with tab1:
         st.write(f"📍 लोकेशन: {p['location']} | 📐 एरिया: {p['area']} | 💰 कीमत: ₹{int(p['rate']):,}")
         st.write(f"👤 मालिक: {p['owner']}")
         
-        # WhatsApp Share Link
         msg = f"नमस्ते, मुझे आपकी प्रॉपर्टी {p['name']} (ID: {p['id']}) में इंटरेस्ट है।"
         wa_url = f"https://wa.me/919999999999?text={msg.replace(' ', '%20')}"
-        st.markdown(f"[💬 WhatsApp पर ग्राहक को विवरण भेजें]({wa_url})")
+        st.markdown(f"[💬 WhatsApp पर विवरण भेजें]({wa_url})")
         st.write("---")
 
-# TAB 2: ADD NEW PROPERTY
+# TAB 2: ADD NEW PROPERTY TO CLOUD
 with tab2:
     st.markdown("### ➕ नई प्रॉपर्टी एंट्री फॉर्म")
     with st.form("add_property_form", clear_on_submit=True):
         n = st.text_input("प्रॉपर्टी का नाम")
         t = st.selectbox("प्रकार", ["प्लॉट (Plot)", "मकान (House)", "दुकान (Shop)", "खेत (Agriculture)"])
         a = st.text_input("एरिया (जैसे: 1200 SqFt)")
-        r = st.text_input("कुल कीमत (सिर्फ नंबर लिखें)")
+        r = st.text_input("कुल कीमत (सिर्फ नंबर लिखें जैसे: 2500000)")
         l = st.text_input("लोकेशन / पता")
         o = st.text_input("मालिक का नाम")
         
@@ -54,51 +81,111 @@ with tab2:
             else:
                 st.error("नाम और कीमत भरना जरूरी है!")
 
-# TAB 3: BLANK DIGITAL BILLING PANEL
+# TAB 3: BILLING PANEL WITH HISTORY STORAGE & ADVANCED PRINT SYSTEM
 with tab3:
     st.markdown("### 💳 न्यू डिजिटल इनवॉइस जनरेटर")
-    st.write("नीचे सभी जगह खाली है, अपनी ज़रूरत के अनुसार भरें:")
+    st.write("विवरण दर्ज करें और रसीद तुरंत प्रिंट या नीचे रिकॉर्ड रजिस्टर में सुरक्षित करें:")
     
     col_left, col_right = st.columns(2)
     
     with col_left:
-        b_name = st.text_input("1. प्रॉपर्टी / रेजीडेंसी का नाम", key="b_name")
-        b_loc = st.text_input("2. प्रॉपर्टी की लोकेशन/पता", key="b_loc")
-        c_name = st.text_input("3. ग्राहक (Buyer) का नाम", key="c_name")
-        c_phone = st.text_input("4. ग्राहक का मोबाइल नंबर", key="c_phone")
+        b_name = st.text_input("1. प्रॉपर्टी / रेजीडेंसी का नाम", value="", placeholder="जैसे: साईं रेजीडेंसी प्लॉट नं 5")
+        b_loc = st.text_input("2. प्रॉपर्टी की लोकेशन/पता", value="", placeholder="जैसे: गोमती नगर, लखनऊ")
+        c_name = st.text_input("3. ग्राहक (Buyer) का नाम", value="")
+        c_phone = st.text_input("4. ग्राहक का मोबाइल नंबर", value="")
 
     with col_right:
-        base_price = st.number_input("5. कुल सौदा राशि (₹)", min_value=0, value=0)
-        disc = st.number_input("6. डिस्काउंट / छूट (₹)", min_value=0, value=0)
-        adv = st.number_input("7. एडवांस पेमेंट / बयाना (₹)", min_value=0, value=0)
+        base_price = st.number_input("5. कुल सौदा राशि (₹)", min_value=0, value=0, step=5000)
+        disc = st.number_input("6. डिस्काउंट / छूट (₹)", min_value=0, value=0, step=1000)
+        adv = st.number_input("7. एडवांस पेमेंट / बयाना (₹)", min_value=0, value=0, step=5000)
 
-    # Invoice Calculations
+    # Automated Live Calculations
     final_total = base_price - disc
     pending_amount = final_total - adv
+    current_date = datetime.now().strftime('%d-%m-%Y')
+    current_time = datetime.now().strftime('%H:%M')
     
     st.write("---")
-    if st.button("🖨️ डिजिटल रसीद प्रिंट करें"):
+    
+    # Process Button
+    if st.button("🖨️ डिजिटल रसीद जनरेट और रिकॉर्ड में सेव करें"):
         if b_name == "":
-            st.warning("कृपया बिल जनरेट करने के लिए प्रॉपर्टी का नाम अवश्य लिखें!")
+            st.warning("कृपया बिल बनाने के लिए प्रॉपर्टी का नाम अवश्य लिखें!")
         else:
-            st.success("⚡ || माँ प्रॉपर्टीज डिजिटल इनवॉइस ||")
-            st.code(f"""
-========================================
-       MAA PROPERTIES DIGITAL INVOICE
-========================================
-तारीख: {datetime.now().strftime('%d-%m-%Y')} | समय: {datetime.now().strftime('%H:%M')}
-----------------------------------------
-🏢 प्रॉपर्टी: {b_name}
-📍 लोकेशन : {b_loc}
-👤 ग्राहक   : {c_name}
-📞 मोबाइल  : {c_phone}
-----------------------------------------
-💵 मूल सौदा राशि  : ₹{base_price:,}
-📉 डिस्काउंट छूट  : ₹{disc:,}
-🟢 फाइनल सौदा मूल्य: ₹{final_total:,}
-🔵 प्राप्त एडवांस  : ₹{adv:,}
-========================================
-🔴 कुल बकाया राशि : ₹{pending_amount:,}
-========================================
-   Verified by Maa Property Cloud 2026
-            """)
+            invoice_id = f"INV-{random.randint(1000, 9999)}"
+            
+            # Save to history ledger dictionary safely
+            saved_record = {
+                "इनवॉइस ID": invoice_id,
+                "तारीख": current_date,
+                "प्रॉपर्टी": b_name,
+                "कस्टमर": c_name,
+                "मोबाइल": c_phone,
+                "मूल सौदा (₹)": base_price,
+                "छूट (₹)": disc,
+                "फाइनल डील (₹)": final_total,
+                "एडवांस प्राप्त (₹)": adv,
+                "बकाया राशि (₹)": pending_amount
+            }
+            st.session_state.bill_records.append(saved_record)
+            st.success(f"✅ इनवॉइस {invoice_id} सफलतापूर्वक क्लाउड रिकॉर्ड में रजिस्टर हो गया है!")
+            
+            # Premium Print Layout Rendering
+            st.markdown(f"""
+            <div class="print-container">
+                <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px;">
+                    <h2 style="margin: 0; color: #000;"><b>|| माँ प्रॉपर्टीज ||</b></h2>
+                    <p style="margin: 3px 0 0 0; font-size: 13px;">डिजिटल रसीद / इनवॉइस कॉपी</p>
+                </div>
+                
+                <table style="width: 100%; font-size: 13px;">
+                    <tr><td><b>INVOICE NO:</b> {invoice_id}</td><td style="text-align: right;"><b>DATE:</b> {current_date}</td></tr>
+                    <tr><td><b>STATUS:</b> SAFE RECORDED</td><td style="text-align: right;"><b>TIME:</b> {current_time}</td></tr>
+                </table>
+                
+                <hr style="border-top: 1px dashed #000; margin: 12px 0;">
+                
+                <table style="width: 100%; font-size: 14px; line-height: 1.6;">
+                    <tr><td style="width: 35%;"><b>🏢 प्रॉपर्टी का नाम:</b></td><td>{b_name}</td></tr>
+                    <tr><td><b>📍 पता / लोकेशन:</b></td><td>{b_loc}</td></tr>
+                    <tr><td><b>👤 ग्राहक का नाम:</b></td><td>{c_name}</td></tr>
+                    <tr><td><b>📞 मोबाइल नंबर:</b></td><td>{c_phone}</td></tr>
+                </table>
+                
+                <hr style="border-top: 1px dashed #000; margin: 12px 0;">
+                
+                <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid #000; font-weight: bold;">
+                        <td style="padding: 4px 0;">विवरण (Particulars)</td>
+                        <td style="text-align: right; padding: 4px 0;">राशि (Amount)</td>
+                    </tr>
+                    <tr><td style="padding: 6px 0;">मूल सौदा राशि (Base Price)</td><td style="text-align: right;">₹{base_price:,}.00</td></tr>
+                    <tr><td style="padding: 6px 0; color: #444;">विशेष छूट (Discount)</td><td style="text-align: right;">- ₹{disc:,}.00</td></tr>
+                    <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000; font-weight: bold;">
+                        <td style="padding: 6px 0;">कुल फाइनल डील (Net Deal Value)</td>
+                        <td style="text-align: right;">₹{final_total:,}.00</td>
+                    </tr>
+                    <tr><td style="padding: 6px 0; color: green;"><b>प्राप्त एडवांस / बयाना राशि</b></td><td style="text-align: right; color: green;"><b>₹{adv:,}.00</b></td></tr>
+                    <tr style="border-top: 2px solid #000; background-color: #eaeaea; font-weight: bold; font-size: 15px;">
+                        <td style="padding: 8px 5px;">🔴 कुल बकाया राशि (PENDING DUE)</td>
+                        <td style="text-align: right; padding: 8px 5px; color: red;">₹{pending_amount:,}.00</td>
+                    </tr>
+                </table>
+                
+                <div style="margin-top: 35px; text-align: center; font-size: 11px; border-top: 1px solid #000; padding-top: 8px;">
+                    <p>यह रिकॉर्ड माँ प्रॉपर्टीज ऐप 2026 द्वारा डिजिटल रूप से सत्यापित और सुरक्षित है।</p>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.info("💡 Tip: कंप्यूटर में इस पेज को PDF सेव करने के लिए Ctrl + P दबाएं, या रसीद का स्क्रीनशॉट लेकर ग्राहक को भेजें।")
+
+    # Real-time Display of Saved Records at the bottom of Billing tab
+    st.write("---")
+    st.markdown("### 📁 सुरक्षित बिल रिकॉर्ड रजिस्टर (Saved Ledger Register)")
+    if len(st.session_state.bill_records) == 0:
+        st.caption("अभी तक कोई पुराना बिल रिकॉर्ड सुरक्षित नहीं है। ऊपर एंट्री करके रसीद बनाएं, वह यहाँ अपने आप रजिस्टर हो जाएगी।")
+    else:
+        df_bills = pd.DataFrame(st.session_state.bill_records)
+        st.dataframe(df_bills, use_container_width=True)
+                                                               
