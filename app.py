@@ -3,17 +3,17 @@ import pandas as pd
 import random
 from datetime import datetime
 
-# Page Configuration for Professional Real-Estate System
+# Page configuration
 st.set_page_config(page_title="मां प्रॉपर्टी डिजिटल ऐप 2026", layout="wide")
 
-# Premium High-Contrast Styling & Print Layout Rules
+# Custom Styling & Print Setup
 st.markdown("""
 <style>
-    .main { background-color: #0f111a; color: #e1e1e6; }
-    .stTabs [data-baseweb="tab"] { color: #a0a5b5; font-weight: bold; font-size: 16px; }
+    .main { background-color: #0f111a; color: #ffffff; }
+    .stTabs [data-baseweb="tab"] { color: #8a99ad; font-weight: bold; }
     .stTabs [data-baseweb="tab"][aria-selected="true"] { color: #00ffcc; border-bottom-color: #00ffcc; }
     
-    /* Clean, Professional Invoice Box Style matching your paper print photo */
+    /* Clean, Professional Invoice Box Style */
     .invoice-card {
         background-color: #ffffff !important;
         color: #000000 !important;
@@ -29,16 +29,16 @@ st.markdown("""
         color: #000000 !important;
     }
     
-    /* CSS rule to isolate only the receipt for clean printing */
+    /* Print trigger style to isolate the receipt paper */
     @media print {
-        body * { visibility: hidden; background: white !important; }
-        .printable-receipt, .printable-receipt * { visibility: visible; color: black !important; }
-        .printable-receipt { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; }
+        body * { visibility: hidden; }
+        .printable-receipt, .printable-receipt * { visibility: visible; }
+        .printable-receipt { position: absolute; left: 0; top: 0; width: 100%; border: none !important; box-shadow: none !important; }
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Persistent Database Store Simulation using Streamlit Session State
+# Main Database Initializer
 if 'properties' not in st.session_state:
     st.session_state.properties = [
         {"id": "PROP-101", "name": "साईं रेजीडेंसी", "type": "प्लॉट (Plot)", "area": "1200 SqFt", "rate": "2500000", "location": "Sector 15, Lucknow", "owner": "राम कुमार"},
@@ -49,93 +49,85 @@ if 'properties' not in st.session_state:
 if 'bill_records' not in st.session_state:
     st.session_state.bill_records = []
 
-# Application Title Header
+# App Header Title
 st.title("⚡ मां प्रॉपर्टी डिजिटल ऐप 2026")
 st.write("---")
 
-# Navigation Tabs
+# Tab Navigation
 tab1, tab2, tab3 = st.tabs([
     "🔍 लाइव स्क्रीन (View Database)", 
     "➕ नई प्रॉपर्टी जोड़ें", 
     "💳 डिजिटल बिलिंग (Billing)"
 ])
 
-# TAB 1: LIVE DATABASE WITH DELETE OPTION
+# TAB 1: VIEW & DELETE PROPERTIES
 with tab1:
     st.markdown("### 📱 आपकी लाइव स्क्रीन पर प्रॉपर्टीज")
-    st.write("यहाँ से आप प्रॉपर्टी देख सकते हैं, WhatsApp पर भेज सकते हैं या डिलीट कर सकते हैं:")
     st.write("---")
     
-    # Loop backward to prevent index shifting bugs during deletion
-    for index, p in enumerate(st.session_state.properties):
-        col_data, col_action = st.columns([4, 1])
+    # Loop using index to safely remove/delete item
+    for index, p in enumerate(list(st.session_state.properties)):
+        col_info, col_del = st.columns([4, 1])
         
-        with col_data:
+        with col_info:
             st.info(f"🏢 नाम: {p['name']} | ID: {p['id']} | प्रकार: {p['type']}")
             st.write(f"📍 लोकेशन: {p['location']} | 📐 एरिया: {p['area']} | 💰 कीमत: ₹{int(p['rate']):,}")
             st.write(f"👤 मालिक: {p['owner']}")
             
-            # WhatsApp Integration Link
             msg = f"नमस्ते, मुझे आपकी प्रॉपर्टी {p['name']} (ID: {p['id']}) में इंटरेस्ट है।"
             wa_url = f"https://wa.me/918109471091?text={msg.replace(' ', '%20')}"
-            st.markdown(f"[💬 WhatsApp पर ग्राहक को विवरण भेजें]({wa_url})")
+            st.markdown(f"[💬 WhatsApp पर विवरण भेजें]({wa_url})")
             
-        with col_action:
+        with col_del:
             st.write(" ")
             st.write(" ")
-            # Unique key for each delete button using property ID
-            if st.button(f"❌ डिलीट करें", key=f"del_{p['id']}_{index}"):
+            if st.button("❌ डिलीट करें", key=f"delete_btn_{p['id']}_{index}"):
                 st.session_state.properties.pop(index)
-                st.warning(f"🗑️ {p['name']} को डेटाबेस से डिलीट कर दिया गया है!")
+                st.warning(f"🗑️ {p['name']} को सफलतापूर्वक हटा दिया गया है!")
                 st.rerun()
                 
         st.write("---")
 
-# TAB 2: ADD NEW PROPERTY
+# TAB 2: ADD NEW PROPERTY WITH STABLE BUTTON
 with tab2:
     st.markdown("### ➕ नई प्रॉपर्टी एंट्री फॉर्म")
-    with st.form("add_property_form", clear_on_submit=True):
+    with st.form("property_addition_form", clear_on_submit=True):
         n = st.text_input("प्रॉपर्टी का नाम")
         t = st.selectbox("प्रकार", ["प्लॉट (Plot)", "मकान (House)", "दुकान (Shop)", "खेत (Agriculture)"])
         a = st.text_input("एरिया (जैसे: 1200 SqFt)")
-        r = st.text_input("कुल कीमत (सिर्फ नंबर लिखें, जैसे: 2500000)")
+        r = st.text_input("कुल कीमत (सिर्फ नंबर लिखें)")
         l = st.text_input("लोकेशन / पता")
         o = st.text_input("मालिक का नाम")
         
-        btn = st.form_submit_button("☁️ सुरक्षित लाइव सेव करें")
-        if btn:
+        submit_btn = st.form_submit_button("☁️ सुरक्षित लाइव सेव करें")
+        if submit_btn:
             if n and r:
-                try:
-                    rate_val = int(r)
-                except ValueError:
-                    rate_val = 0
                 new_id = f"PROP-{random.randint(400, 999)}"
                 st.session_state.properties.append({
-                    "id": new_id, "name": n, "type": t, "area": a, "rate": str(rate_val), "location": l, "owner": o
+                    "id": new_id, "name": n, "type": t, "area": a, "rate": r, "location": l, "owner": o
                 })
-                st.success(f"🎉 नई प्रॉपर्टी '{n}' सफलतापूर्वक लाइव स्क्रीन पर सेव हो गई! ID: {new_id}")
+                st.success(f"🎉 प्रॉपर्टी '{n}' डेटाबेस में लाइव जोड़ दी गई है!")
                 st.balloons()
                 st.rerun()
             else:
-                st.error("प्रॉपर्टी का नाम और कीमत भरना अनिवार्य है!")
+                st.error("कृपया प्रॉपर्टी का नाम और कीमत जरूर भरें!")
 
-# TAB 3: BILLING & PAPER PRINT ENGINE
+# TAB 3: BILLING ENGINE WITH DIRECT PRINT FUNCTION
 with tab3:
     st.markdown("### 💳 न्यू डिजिटल इनवॉइस जनरेटर")
-    st.write("डिटेल्स भरें और नीचे रसीद पेपर प्रिंट आउट निकालें:")
     
-    col_left, col_right = st.columns(2)
+    col_l, col_r = st.columns(2)
     
-    with col_left:
+    with col_l:
         b_name = st.text_input("1. प्रॉपर्टी / रेजीडेंसी का नाम", value="maa proprey")
         b_loc = st.text_input("2. प्रॉपर्टी की लोकेशन/पता", value="chatarkhar")
-        c_name = st.text_input("3. ग्राहक (Buyer) का name", value="umasankar")
+        c_name = st.text_input("3. ग्राहक (Buyer) का नाम", value="umasankar")
         c_phone = st.text_input("4. ग्राहक का मोबाइल नंबर", value="8109471091")
 
-    with col_right:
-        base_price = st.number_input("5. मूल सौदा राशि (₹)", min_value=0, value=20000000, step=1000)
-        disc = st.number_input("6. डिस्काउंट / छूट (₹)", min_value=0, value=0, step=500)
-        adv = st.number_input("7. एडवांस पेमेंट / बयाना (₹)", min_value=0, value=100000, step=1000)
+    with col_r:
+        base_price = st.number_input("5. मूल सौदा राशि (₹)", min_value=0, value=20000000, step=5000)
+        disc = st.number_input("6. डिस्काउंट / छूट (₹)", min_value=0, value=0, step=1000)
+        adv = st.number_input("7. एडवांस पेमेंट / बयाना (₹)", min_value=0, value=100000, step=5000)
 
     # Computations
     final_total = base_price - disc
@@ -145,35 +137,31 @@ with tab3:
     
     st.write("---")
     
-    # Process invoice calculation
-    if 'current_receipt' not in st.session_state:
-        st.session_state.current_receipt = None
+    # Store dynamic receipt block in session memory to prevent wipeout on clicking print
+    if 'active_bill' not in st.session_state:
+        st.session_state.active_bill = None
 
     if st.button("✨ डिजिटल रसीद तैयार करें"):
         if b_name == "":
-            st.error("कृपया बिल बनाने के लिए प्रॉपर्टी का नाम लिखें!")
+            st.error("कृपया बिल जनरेट करने के लिए प्रॉपर्टी का नाम लिखें!")
         else:
-            invoice_id = f"INV-{random.randint(3000, 3999)}"
-            
-            # Save receipt layout inside a standard variable session state
-            st.session_state.current_receipt = {
-                "id": invoice_id, "date": current_date, "time": current_time,
+            inv_id = f"INV-{random.randint(3000, 3999)}"
+            st.session_state.active_bill = {
+                "id": inv_id, "date": current_date, "time": current_time,
                 "b_name": b_name, "b_loc": b_loc, "c_name": c_name, "c_phone": c_phone,
                 "base": base_price, "disc": disc, "total": final_total, "adv": adv, "due": pending_amount
             }
-            
-            # Append to history ledger
+            # Append ledger history register
             st.session_state.bill_records.append({
-                "रसीद ID": invoice_id, "तारीख": current_date, "प्रॉपर्टी": b_name,
-                "कस्टमर": c_name, "फाइनल सौदा": final_total, "बकाया राशि": pending_amount
+                "रसीद ID": inv_id, "तारीख": current_date, "प्रॉपर्टी": b_name, "कस्टमर": c_name, "बकाया राशि": pending_amount
             })
-            st.success("✅ रसीद सफलतापूर्वक तैयार हो गई है! नीचे प्रिंट ऑप्शन देखें।")
+            st.success("✅ डिजिटल रसीद जनरेट हो चुकी है! नीचे प्रिंट आउट बटन दबाएं।")
 
-    # If receipt generated, show print option and standard layout look
-    if st.session_state.current_receipt:
-        rc = st.session_state.current_receipt
+    # Display receipt if session state data is present
+    if st.session_state.active_bill:
+        rb = st.session_state.active_bill
         
-        # JAVASCRIPT PRINT TRIGGER BUTTON
+        # Asli Print Window Trigger Button (Browser native print call)
         st.markdown("""
             <div style="text-align: center; margin: 20px 0;">
                 <button onclick="window.print()" style="
@@ -183,22 +171,36 @@ with tab3:
                     font-weight: bold; 
                     padding: 12px 35px; 
                     border: none; 
-                    border-radius: 5px; 
+                    border-radius: 4px; 
                     cursor: pointer;
-                    box-shadow: 0 4px 10px rgba(0,255,204,0.3);
-                ">🖨️ Print Receipt (रसीद प्रिंट आउट निकालें)</button>
+                    box-shadow: 0 4px 10px rgba(0,255,204,0.4);
+                ">🖨️ Print Receipt (रसीद पेपर प्रिंट आउट निकालें)</button>
             </div>
         """, unsafe_allow_html=True)
         
-        # Display Exact Invoice matching your paper screenshot layout
+        # Render the accurate premium white invoice matching your design
         st.markdown(f"""
         <div class="invoice-card printable-receipt">
-            <div style="text-align: center; border-bottom: 2px solid #000000; padding-bottom: 5px; margin-bottom: 12px;">
-                <h2 style="margin: 0; font-size: 22px; letter-spacing: 1px;"><b>|| माँ प्रॉपर्टीज डिजिटल इनवॉइस ||</b></h2>
-                <p style="margin: 3px 0 0 0; font-size: 12px;">तारीख: {rc['date']} | समय: {rc['time']}</p>
+            <div style="text-align: center; border-bottom: 2px solid #000000; padding-bottom: 6px; margin-bottom: 15px;">
+                <h2 style="margin: 0; font-size: 24px;"><b>|| माँ प्रॉपर्टीज ||</b></h2>
+                <p style="margin: 4px 0 0 0; font-size: 13px;">डिजिटल रसीद / इनवॉइस कॉपी</p>
             </div>
             
-            <table style="width: 100%; font-size: 14px; margin-bottom: 10px; line-height: 1.8;">
-                <tr><td style="width: 35%;"><b>🏢 प्रॉपर्टी नाम:</b></td><td><b>{rc['b_name']}</b></td></tr>
-                <tr><td><b>📍 लोकेशन:</b></td><td>{rc['b_loc']}</td></tr>
-                <tr><td><b>👤 ग्राहक:</b></td><td>{rc['c_name']}</td></tr>
+            <table style="width: 100%; font-size: 13px; margin-bottom: 8px;">
+                <tr><td><b>INVOICE NO:</b> {rb['id']}</td><td style="text-align: right;"><b>DATE:</b> {rb['date']}</td></tr>
+                <tr><td><b>STATUS:</b> SAFE RECORDED</td><td style="text-align: right;"><b>TIME:</b> {rb['time']}</td></tr>
+            </table>
+            
+            <hr style="border-top: 1px dashed #000000; margin: 10px 0;">
+            
+            <table style="width: 100%; font-size: 14px; line-height: 1.7;">
+                <tr><td style="width: 35%;"><b>🏢 प्रॉपर्टी का नाम:</b></td><td><b>{rb['b_name']}</b></td></tr>
+                <tr><td><b>📍 पता / लोकेशन:</b></td><td>{rb['b_loc']}</td></tr>
+                <tr><td><b>👤 ग्राहक का नाम:</b></td><td>{rb['c_name']}</td></tr>
+                <tr><td><b>📞 मोबाइल नंबर:</b></td><td>{rb['c_phone']}</td></tr>
+            </table>
+            
+            <hr style="border-top: 1px dashed #000000; margin: 10px 0;">
+            
+            <table style="width: 10
+         
