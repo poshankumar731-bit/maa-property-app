@@ -5,56 +5,63 @@ from datetime import datetime
 # पेज सेटअप
 st.set_page_config(page_title="Maa Property 2026", layout="centered")
 
-# प्रिंट के लिए एकदम सटीक CSS (यह बिल को एक पेज पर रखेगा)
+# CSS: यह प्रिंटर के लिए बिल को एक पेज पर सेट करता है
 st.markdown("""
 <style>
-    .print-container { 
-        width: 100%; max-width: 400px; margin: auto; 
-        border: 2px solid #000; padding: 20px; font-family: Arial, sans-serif;
-    }
+    .print-container { width: 100%; max-width: 400px; border: 2px solid #000; padding: 20px; margin: auto; font-family: sans-serif; }
     @media print {
         body * { visibility: hidden; }
         .printable-area, .printable-area * { visibility: visible; }
         .printable-area { position: absolute; left: 0; top: 0; width: 100%; }
-        @page { size: A4 portrait; margin: 10mm; }
     }
 </style>
 """, unsafe_allow_html=True)
 
-# लॉगिन सिस्टम
+# लॉगिन सिस्टम (यूजर आईडी और पासवर्ड के साथ)
 if 'logged_in' not in st.session_state: st.session_state.logged_in = False
+
 if not st.session_state.logged_in:
-    st.subheader("🔐 लॉगिन करें")
-    if st.text_input("पासवर्ड", type="password") == "12345":
-        if st.button("लॉगिन"):
+    st.subheader("🔐 मां प्रॉपर्टी - लॉगिन")
+    # यहाँ यूजर आईडी और पासवर्ड दोनों हैं
+    user_id = st.text_input("👤 यूजर आईडी (User ID)")
+    password = st.text_input("🔑 पासवर्ड (Password)", type="password")
+    
+    if st.button("लॉगिन करें"):
+        if user_id == "admin" and password == "12345":
             st.session_state.logged_in = True
             st.rerun()
+        else:
+            st.error("❌ गलत यूजर आईडी या पासवर्ड!")
     st.stop()
 
+# मुख्य ऐप
 st.title("⚡ मां प्रॉपर्टी 2026")
 if st.button("🔒 लॉगआउट"): st.session_state.logged_in = False; st.rerun()
 
-# इनपुट फॉर्म
-b_name = st.text_input("प्रॉपर्टी का नाम")
-area = st.text_input("एरिया (SqFt)")
-loc = st.text_input("लोकेशन")
-c_name = st.text_input("खरीदार")
-c_phone = st.text_input("मोबाइल नंबर")
-base = st.number_input("कुल राशि", value=0)
-adv = st.number_input("एडवांस", value=0)
+# रसीद बनाने का फॉर्म
+col1, col2 = st.columns(2)
+with col1:
+    b_name = st.text_input("प्रॉपर्टी का नाम")
+    area = st.text_input("एरिया (SqFt)")
+    loc = st.text_input("लोकेशन")
+with col2:
+    c_name = st.text_input("खरीदार")
+    c_phone = st.text_input("मोबाइल नंबर")
+    base = st.number_input("कुल राशि", value=0)
+    adv = st.number_input("एडवांस", value=0)
 
-if st.button("✨ रसीद तैयार करें"):
+if st.button("✨ रसीद जेनरेट करें"):
     st.session_state.bill = {
         "id": random.randint(1000, 9999), "b_name": b_name, "area": area, 
         "loc": loc, "c_name": c_name, "c_phone": c_phone, 
         "base": base, "due": base - adv, "date": datetime.now().strftime('%d-%m-%Y')
     }
 
-# रसीद का हिस्सा
+# बिल दिखाना और प्रिंट बटन
 if 'bill' in st.session_state:
     rb = st.session_state.bill
     st.markdown(f"""
-    <div class="printable-area print-container">
+    <div class="printable-area print-container" id="receipt">
         <h2 style="text-align:center;">MAA PROPERTIES</h2>
         <p><b>Inv:</b> {rb['id']} | <b>Date:</b> {rb['date']}</p>
         <hr>
@@ -70,5 +77,11 @@ if 'bill' in st.session_state:
         </div>
     </div>
     """, unsafe_allow_html=True)
-    st.success("✅ रसीद तैयार है! अब प्रिंट करें।")
-    st.info("🖨️ प्रिंट करने के लिए अपने कीबोर्ड पर Ctrl + P दबाएं।")
+    
+    st.write("")
+    # प्रिंट बटन - इसे दबाते ही ब्राउज़र का प्रिंट डायलॉग खुलेगा
+    st.markdown("""
+    <button onclick="window.print()" style="width:100%; padding:10px; background-color:blue; color:white; border:none; cursor:pointer; font-size:16px;">
+        🖨️ यहाँ क्लिक करके बिल प्रिंट करें
+    </button>
+    """, unsafe_allow_html=True)
