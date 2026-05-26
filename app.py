@@ -100,7 +100,7 @@ with col_logout:
 
 st.write("---")
 
-tab1, tab2, tab3 = st.tabs(["🔍 लाइव स्क्रीन (Properties)", "➕ नई प्रॉपर्टी जोड़ें", "💳 डिजिटल बिलिंग एवं रिकॉर्ड रजिस्टर"])
+tab1, tab2, tab3 = st.tabs(["🔍 लाइव स्क्रीन (View Database)", "➕ नई प्रॉपर्टी जोड़ें", "💳 डिजिटल बिलिंग और रिकॉर्ड रजिस्टर"])
 
 # ==================== टैब 1: लाइव प्रॉपर्टीज ====================
 with tab1:
@@ -131,7 +131,7 @@ with tab1:
 # ==================== टैब 2: नई प्रॉपर्टी एंट्री ====================
 with tab2:
     st.markdown("### ➕ नई प्रॉपर्टी एंट्री फॉर्म")
-    with st.form("property_form_v5", clear_on_submit=True):
+    with st.form("property_form_final", clear_on_submit=True):
         n = st.text_input("प्रॉपर्टी का नाम")
         t = st.selectbox("प्रकार", ["प्लॉट (Plot)", "मकान (House)", "दुकान (Shop)", "खेत (Agriculture)"])
         a = st.text_input("एरिया")
@@ -142,15 +142,14 @@ with tab2:
         if st.form_submit_button("☁️ सुरक्षित लाइव सेव करें"):
             if n and r:
                 new_id = "PROP-" + str(random.randint(400, 999))
-                # .upper() का इस्तेमाल करके नाम ऑटोमैटिक कैपिटल शब्दों में सेव होगा
                 st.session_state.properties.append({
                     "id": new_id, 
-                    "name": n.upper(), 
+                    "name": str(n).upper(), 
                     "type": t, 
-                    "area": a, 
-                    "rate": r, 
-                    "location": l.upper(), 
-                    "owner": o.upper()
+                    "area": str(a), 
+                    "rate": str(r), 
+                    "location": str(l).upper(), 
+                    "owner": str(o).upper()
                 })
                 st.success("🎉 सफलतापूर्वक लाइव सुरक्षित कर दी गई है!")
                 st.rerun()
@@ -195,11 +194,10 @@ with tab3:
         if is_edit:
             if st.button("💾 एडिट किया हुआ बिल अपडेट करें", type="primary"):
                 idx = st.session_state.edit_index
-                # सेव करते समय .upper() लगाकर सभी नाम कैपिटल किए गए हैं
                 updated_record = {
                     "bill_id": edit_data["bill_id"], "date": edit_data["date"],
-                    "prop_name": b_name.upper(), "location": b_loc.upper(), 
-                    "cust_name": c_name.upper(), "phone": c_phone, "seller_name": s_name.upper(),
+                    "prop_name": str(b_name).upper(), "location": str(b_loc).upper(), 
+                    "cust_name": str(c_name).upper(), "phone": c_phone, "seller_name": str(s_name).upper(),
                     "base": base_price, "disc": disc, "adv": adv, "due": pending_amount
                 }
                 st.session_state.bill_records[idx] = updated_record
@@ -213,11 +211,10 @@ with tab3:
                     st.error("कृपया प्रॉपर्टी का नाम लिखें!")
                 else:
                     inv_id = "INV-" + str(random.randint(3000, 3999))
-                    # .upper() के जादू से यहाँ भी सब नाम आटोमैटिक कैपिटल लेटर बन जाएंगे
                     new_bill = {
                         "bill_id": inv_id, "date": current_date,
-                        "prop_name": b_name.upper(), "location": b_loc.upper(), 
-                        "cust_name": c_name.upper(), "phone": c_phone, "seller_name": s_name.upper(),
+                        "prop_name": str(b_name).upper(), "location": str(b_loc).upper(), 
+                        "cust_name": str(c_name).upper(), "phone": c_phone, "seller_name": str(s_name).upper(),
                         "base": base_price, "disc": disc, "adv": adv, "due": pending_amount
                     }
                     st.session_state.active_bill = new_bill
@@ -238,7 +235,6 @@ with tab3:
         
         st.markdown('<button onclick="window.print()" style="background-color: #00ffcc; color: black; font-weight: bold; padding: 16px 30px; border: 2px solid black; border-radius: 6px; cursor: pointer; width: 100%; font-size: 18px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">🖨️ Click Here to Print Original Invoice</button>', unsafe_allow_html=True)
         
-        # रसीद स्ट्रक्चर - इसमें बायर, सेलर और प्रॉपर्टी का नाम बड़े अक्षरों में प्रिंट होगा
         receipt_html = f"""
         <div class="digital-bill-box printable-bill-area">
             <div style="text-align: center; border-bottom: 3px double #000000; padding-bottom: 10px; margin-bottom: 15px;">
@@ -255,11 +251,11 @@ with tab3:
             
             <div style="background-color: #f9f9f9; padding: 15px; border-radius: 6px; border: 1px solid #e0e0e0; margin-bottom: 25px;">
                 <table style="width: 100%; font-size: 14px; line-height: 1.9; color: #000000; font-family: Arial, sans-serif;">
-                    <tr><td style="width: 35%;"><b>Property Name:</b></td><td><b>{rb['prop_name'].upper()}</b></td></tr>
-                    <tr><td><b>Location / Address:</b></td><td>{rb['location'].upper()}</td></tr>
-                    <tr><td><b>Buyer Name:</b></td><td><b>{rb['cust_name'].upper()}</b></td></tr>
+                    <tr><td style="width: 35%;"><b>Property Name:</b></td><td><b>{str(rb['prop_name']).upper()}</b></td></tr>
+                    <tr><td><b>Location / Address:</b></td><td>{str(rb['location']).upper()}</td></tr>
+                    <tr><td><b>Buyer Name:</b></td><td><b>{str(rb['cust_name']).upper()}</b></td></tr>
                     <tr><td><b>Mobile Number:</b></td><td>{rb['phone']}</td></tr>
-                    <tr><td><b>Seller Name:</b></td><td><b>{rb['seller_name'].upper()}</b></td></tr>
+                    <tr><td><b>Seller Name:</b></td><td><b>{str(rb['seller_name']).upper()}</b></td></tr>
                 </table>
             </div>
             
@@ -271,16 +267,16 @@ with tab3:
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td style="padding: 10px 5px;">Base Property Deal Price</td><td style="text-align: right; padding: 10px 5px;">₹{int(rb['base']):,}.00</td></tr>
-                    <tr><td style="padding: 10px 5px; color: #555555;">Special Discount Given</td><td style="text-align: right; padding: 10px 5px; color: #555555;">- ₹{int(rb['disc']):,}.00</td></tr>
+                    <tr><td style="padding: 10px 5px;">Base Property Deal Price</td><td style="text-align: right; padding: 10px 5px;">Ref. {int(rb['base']):,}.00</td></tr>
+                    <tr><td style="padding: 10px 5px; color: #555555;">Special Discount Given</td><td style="text-align: right; padding: 10px 5px; color: #555555;">- Ref. {int(rb['disc']):,}.00</td></tr>
                     <tr style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; font-weight: bold;">
                         <td style="padding: 10px 5px;">Net Deal Amount</td>
-                        <td style="text-align: right; padding: 10px 5px;">₹{int(rb['base']) - int(rb['disc']):,}.00</td>
+                        <td style="text-align: right; padding: 10px 5px;">Ref. {int(rb['base']) - int(rb['disc']):,}.00</td>
                     </tr>
-                    <tr><td style="padding: 10px 5px; color: green;"><b>Advance Amount Received (Bayana)</b></td><td style="text-align: right; padding: 10px 5px; color: green;"><b>₹{int(rb['adv']):,}.00</b></td></tr>
+                    <tr><td style="padding: 10px 5px; color: green;"><b>Advance Amount Received (Bayana)</b></td><td style="text-align: right; padding: 10px 5px; color: green;"><b>Ref. {int(rb['adv']):,}.00</b></td></tr>
                     <tr style="border-top: 2px solid #000000; font-weight: bold; font-size: 16px; background-color: #f5f5f5;">
                         <td style="padding: 12px 5px; color: #cc0000;">TOTAL PENDING DUE</td>
-                        <td style="text-align: right; padding: 12px 5px; color: #cc0000;"><b>₹{int(rb['due']):,}.00</b></td>
+                        <td style="text-align: right; padding: 12px 5px; color: #cc0000;"><b>Ref. {int(rb['due']):,}.00</b></td>
                     </tr>
                 </tbody>
             </table>
@@ -311,7 +307,7 @@ with tab3:
             col_rec_info, col_rec_edit, col_rec_del = st.columns([3, 1, 1])
             
             with col_rec_info:
-                st.code(f"🆔 {r_data['bill_id']} | 📅 {r_data['date']} | 👤 Buyer: {r_data['cust_name'].upper()} | 🏢 {r_data['prop_name'].upper()} | 🔴 Due: ₹{int(r_data['due']):,}")
+                st.code(f"🆔 {r_data['bill_id']} | 📅 {r_data['date']} | 👤 Buyer: {str(r_data['cust_name']).upper()} | 🏢 {str(r_data['prop_name']).upper()} | 🔴 Due: Ref. {int(r_data['due']):,}")
             
             with col_rec_edit:
                 if st.button("✏️ एडिट", key=f"btn_edit_rec_{r_data['bill_id']}_{r_idx}"):
@@ -325,5 +321,5 @@ with tab3:
                         st.session_state.active_bill = None
                     st.warning("🗑️ रसीद रिकॉर्ड से हटा दी गई है!")
                     st.rerun()
-else:
-    st.write("अभी रजिस्टर में कोई बिल सुरक्षित नहीं है।")
+    else:
+        st.write("अभी रजिस्टर में कोई बिल सुरक्षित नहीं है।")
