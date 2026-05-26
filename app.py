@@ -12,16 +12,21 @@ st.markdown("""
     .main { background-color: #0f111a; color: #ffffff; }
     .stTabs [data-baseweb="tab"] { color: #8a99ad; font-weight: bold; }
     .stTabs [data-baseweb="tab"][aria-selected="true"] { color: #00ffcc; border-bottom-color: #00ffcc; }
-    .print-container {
+    
+    /* Premium Invoice Styles for Screen & Print */
+    .print-box {
         background-color: #ffffff !important;
         color: #000000 !important;
-        padding: 25px;
-        border: 2px solid #222222;
-        border-radius: 6px;
+        padding: 30px;
+        border: 2px solid #000000;
+        border-radius: 8px;
         font-family: 'Courier New', Courier, monospace;
-        max-width: 650px;
+        max-width: 600px;
         margin: 20px auto;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .print-box h2, .print-box h3, .print-box p, .print-box td {
+        color: #000000 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -52,7 +57,7 @@ with tab1:
     st.markdown("### 📱 आपकी लाइव स्क्रीन पर प्रॉपर्टीज")
     for p in st.session_state.properties:
         st.info(f"🏢 नाम: {p['name']} | ID: {p['id']} | प्रकार: {p['type']}")
-        st.write(f"📍 लोकेशन: {p['location']} | 📐 एरिया: {p['area']} | 💰 कीमत: ₹{int(p['rate']):,}")
+        st.write(f"📍 लोकेशन: {p['location']} | 📐エリア: {p['area']} | 💰 कीमत: ₹{int(p['rate']):,}")
         st.write(f"👤 मालिक: {p['owner']}")
         
         msg = f"नमस्ते, मुझे आपकी प्रॉपर्टी {p['name']} (ID: {p['id']}) में इंटरेस्ट है।"
@@ -67,7 +72,7 @@ with tab2:
         n = st.text_input("प्रॉपर्टी का नाम")
         t = st.selectbox("प्रकार", ["प्लॉट (Plot)", "मकान (House)", "दुकान (Shop)", "खेत (Agriculture)"])
         a = st.text_input("एरिया (जैसे: 1200 SqFt)")
-        r = st.text_input("कुल कीमत (सिर्फ नंबर लिखें जैसे: 2500000)")
+        r = st.text_input("कुल कीमत (सिर्फ नंबर लिखें)")
         l = st.text_input("लोकेशन / पता")
         o = st.text_input("मालिक का नाम")
         
@@ -81,7 +86,7 @@ with tab2:
             else:
                 st.error("नाम और कीमत भरना जरूरी है!")
 
-# TAB 3: BILLING PANEL WITH HISTORY STORAGE & ADVANCED PRINT SYSTEM
+# TAB 3: BILLING PANEL WITH HISTORY STORAGE & FIXED HTML PRINT SYSTEM
 with tab3:
     st.markdown("### 💳 न्यू डिजिटल इनवॉइस जनरेटर")
     st.write("विवरण दर्ज करें और रसीद तुरंत प्रिंट या नीचे रिकॉर्ड रजिस्टर में सुरक्षित करें:")
@@ -89,7 +94,7 @@ with tab3:
     col_left, col_right = st.columns(2)
     
     with col_left:
-        b_name = st.text_input("1. प्रॉपर्टी / रेजीडेंसी का नाम", value="", placeholder="जैसे: साईं रेजीडेंसी प्लॉट नं 5")
+        b_name = st.text_input("1. प्रॉपर्टी / रेजीडेंसी का नाम", value="", placeholder="जैसे: साईं रेजीडेंसी")
         b_loc = st.text_input("2. प्रॉपर्टी की लोकेशन/पता", value="", placeholder="जैसे: गोमती नगर, लखनऊ")
         c_name = st.text_input("3. ग्राहक (Buyer) का नाम", value="")
         c_phone = st.text_input("4. ग्राहक का मोबाइल नंबर", value="")
@@ -108,7 +113,7 @@ with tab3:
     st.write("---")
     
     # Process Button
-    if st.button("🖨️ डिजिटल रसीद जनरेट और रिकॉर्ड में सेव करें"):
+    if st.form_submit_button if 'form' in locals() else st.button("🖨️ डिजिटल रसीद जनरेट और रिकॉर्ड में सेव करें"):
         if b_name == "":
             st.warning("कृपया बिल बनाने के लिए प्रॉपर्टी का नाम अवश्य लिखें!")
         else:
@@ -117,7 +122,7 @@ with tab3:
             # Save to history ledger dictionary safely
             saved_record = {
                 "इनवॉइस ID": invoice_id,
-                "तारीख": current_date,
+                "तاريخ": current_date,
                 "प्रॉपर्टी": b_name,
                 "कस्टमर": c_name,
                 "मोबाइल": c_phone,
@@ -130,62 +135,8 @@ with tab3:
             st.session_state.bill_records.append(saved_record)
             st.success(f"✅ इनवॉइस {invoice_id} सफलतापूर्वक क्लाउड रिकॉर्ड में रजिस्टर हो गया है!")
             
-            # Premium Print Layout Rendering
+            # FIXED: HTML Rendering enabled via unsafe_allow_html=True
             st.markdown(f"""
-            <div class="print-container">
-                <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px;">
-                    <h2 style="margin: 0; color: #000;"><b>|| माँ प्रॉपर्टीज ||</b></h2>
-                    <p style="margin: 3px 0 0 0; font-size: 13px;">डिजिटल रसीद / इनवॉइस कॉपी</p>
-                </div>
-                
-                <table style="width: 100%; font-size: 13px;">
-                    <tr><td><b>INVOICE NO:</b> {invoice_id}</td><td style="text-align: right;"><b>DATE:</b> {current_date}</td></tr>
-                    <tr><td><b>STATUS:</b> SAFE RECORDED</td><td style="text-align: right;"><b>TIME:</b> {current_time}</td></tr>
-                </table>
-                
-                <hr style="border-top: 1px dashed #000; margin: 12px 0;">
-                
-                <table style="width: 100%; font-size: 14px; line-height: 1.6;">
-                    <tr><td style="width: 35%;"><b>🏢 प्रॉपर्टी का नाम:</b></td><td>{b_name}</td></tr>
-                    <tr><td><b>📍 पता / लोकेशन:</b></td><td>{b_loc}</td></tr>
-                    <tr><td><b>👤 ग्राहक का नाम:</b></td><td>{c_name}</td></tr>
-                    <tr><td><b>📞 मोबाइल नंबर:</b></td><td>{c_phone}</td></tr>
-                </table>
-                
-                <hr style="border-top: 1px dashed #000; margin: 12px 0;">
-                
-                <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
-                    <tr style="border-bottom: 1px solid #000; font-weight: bold;">
-                        <td style="padding: 4px 0;">विवरण (Particulars)</td>
-                        <td style="text-align: right; padding: 4px 0;">राशि (Amount)</td>
-                    </tr>
-                    <tr><td style="padding: 6px 0;">मूल सौदा राशि (Base Price)</td><td style="text-align: right;">₹{base_price:,}.00</td></tr>
-                    <tr><td style="padding: 6px 0; color: #444;">विशेष छूट (Discount)</td><td style="text-align: right;">- ₹{disc:,}.00</td></tr>
-                    <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000; font-weight: bold;">
-                        <td style="padding: 6px 0;">कुल फाइनल डील (Net Deal Value)</td>
-                        <td style="text-align: right;">₹{final_total:,}.00</td>
-                    </tr>
-                    <tr><td style="padding: 6px 0; color: green;"><b>प्राप्त एडवांस / बयाना राशि</b></td><td style="text-align: right; color: green;"><b>₹{adv:,}.00</b></td></tr>
-                    <tr style="border-top: 2px solid #000; background-color: #eaeaea; font-weight: bold; font-size: 15px;">
-                        <td style="padding: 8px 5px;">🔴 कुल बकाया राशि (PENDING DUE)</td>
-                        <td style="text-align: right; padding: 8px 5px; color: red;">₹{pending_amount:,}.00</td>
-                    </tr>
-                </table>
-                
-                <div style="margin-top: 35px; text-align: center; font-size: 11px; border-top: 1px solid #000; padding-top: 8px;">
-                    <p>यह रिकॉर्ड माँ प्रॉपर्टीज ऐप 2026 द्वारा डिजिटल रूप से सत्यापित और सुरक्षित है।</p>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.info("💡 Tip: कंप्यूटर में इस पेज को PDF सेव करने के लिए Ctrl + P दबाएं, या रसीद का स्क्रीनशॉट लेकर ग्राहक को भेजें।")
-
-    # Real-time Display of Saved Records at the bottom of Billing tab
-    st.write("---")
-    st.markdown("### 📁 सुरक्षित बिल रिकॉर्ड रजिस्टर (Saved Ledger Register)")
-    if len(st.session_state.bill_records) == 0:
-        st.caption("अभी तक कोई पुराना बिल रिकॉर्ड सुरक्षित नहीं है। ऊपर एंट्री करके रसीद बनाएं, वह यहाँ अपने आप रजिस्टर हो जाएगी।")
-    else:
-        df_bills = pd.DataFrame(st.session_state.bill_records)
-        st.dataframe(df_bills, use_container_width=True)
-                                                               
+            <div class="print-box">
+                <div style="text-align: center; border-bottom: 2px solid #000000; padding-bottom: 8px; margin-bottom: 15
+    
