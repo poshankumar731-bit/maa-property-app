@@ -7,7 +7,7 @@ st.set_page_config(page_title="Maa Property 2026", layout="centered")
 
 # 2. सुरक्षित लॉगिन क्रेडेंशियल्स
 USER_DATA = {
-    "admin": "Vishalgupta", # यूजरनेम: admin, पासवर्ड: MaaProperty@2026
+    "admin": "Vishalgupta", # यूजरनेम: admin, पासवर्ड: Vishal@1234
     "staff": "Vishal@1234"          # दूसरा यूजर भी बना सकते हैं
 }
 
