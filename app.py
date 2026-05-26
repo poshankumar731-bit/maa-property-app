@@ -3,10 +3,10 @@ import pandas as pd
 import random
 from datetime import datetime
 
-# 1. पेज कॉन्फ़िगरेशन
+# 1. पेज सेटअप
 st.set_page_config(page_title="मां प्रॉपर्टी डिजिटल ऐप 2026", layout="wide")
 
-# 2. डेटाबेस इनिशियलाइज़र (मेमोरी लॉक)
+# 2. डेटाबेस (मेमोरी लॉक)
 if 'properties' not in st.session_state:
     st.session_state.properties = [
         {"id": "PROP-101", "name": "साईं रेजीडेंसी", "type": "प्लॉट (Plot)", "area": "1200 SqFt", "rate": "2500000", "location": "Sector 15, Lucknow", "owner": "राम कुमार"},
@@ -24,38 +24,37 @@ if 'active_bill' not in st.session_state:
 st.title("⚡ मां प्रॉपर्टी डिजिटल ऐप 2026")
 st.write("---")
 
-# टैब नेविगेशन
-tab1, tab2, tab3 = st.tabs([
-    "🔍 लाइव स्क्रीन (View Database)", 
-    "➕ नई प्रॉपर्टी जोड़ें", 
-    "💳 डिजिटल बिलिंग (Billing)"
-])
+# तीन आसान टैब
+tab1, tab2, tab3 = st.tabs(["🔍 लाइव स्क्रीन (View Database)", "➕ नई प्रॉपर्टी जोड़ें", "💳 डिजिटल बिलिंग (Billing)"])
 
-# ==================== टैब 1: लाइव स्क्रीन और डिलीट लॉजिक ====================
+# ==================== टैब 1: लाइव स्क्रीन (प्रॉपर्टी लिस्ट और डिलीट) ====================
 with tab1:
     st.markdown("### 📱 आपकी लाइव स्क्रीन पर प्रॉपर्टीज")
     st.write("---")
     
-    # लूप चलाकर सभी प्रॉपर्टीज को दिखाना
-    for index, p in enumerate(list(st.session_state.properties)):
+    # सुरक्षित तरीके से लिस्ट दिखाने और डिलीट करने का लॉजिक
+    props_list = list(st.session_state.properties)
+    for index, p in enumerate(props_list):
         col_info, col_del = st.columns([4, 1])
         
         with col_info:
-            st.info(f"🏢 नाम: {p['name']} | ID: {p['id']} | प्रकार: {p['type']}")
-            st.write(f"📍 लोकेशन: {p['location']} | 📐 एरिया: {p['area']} | 💰 कीमत: ₹{int(p['rate']):,}")
-            st.write(f"👤 मालिक: {p['owner']}")
+            st.info("🏢 नाम: " + str(p['name']) + " | ID: " + str(p['id']) + " | प्रकार: " + str(p['type']))
+            st.write("📍 लोकेशन: " + str(p['location']) + " | 📐 एरिया: " + str(p['area']) + " | 💰 कीमत: ₹" + str(p['rate']))
+            st.write("👤 मालिक: " + str(p['owner']))
             
-            msg = f"नमस्ते, मुझे आपकी प्रॉपर्टी {p['name']} (ID: {p['id']}) में इंटरेस्ट है।"
-            wa_url = f"https://wa.me/918109471091?text={msg.replace(' ', '%20')}"
-            st.markdown(f"[💬 WhatsApp पर विवरण भेजें]({wa_url})")
+            # व्हाट्सएप लिंक जनरेटर
+            msg = "नमस्ते, मुझे आपकी प्रॉपर्टी " + str(p['name']) + " में इंटरेस्ट है।"
+            wa_url = "https://wa.me/918109471091?text=" + msg.replace(" ", "%20")
+            st.markdown("[💬 WhatsApp पर विवरण भेजें](" + wa_url + ")")
             
         with col_del:
             st.write(" ")
             st.write(" ")
-            # हर प्रॉपर्टी के लिए एक यूनिक डिलीट बटन
-            if st.button("❌ डिलीट करें", key=f"del_item_{p['id']}_{index}"):
+            # हर आइटम का अपना यूनिक बटन
+            btn_key = "del_" + str(p['id']) + "_" + str(index)
+            if st.button("❌ डिलीट करें", key=btn_key):
                 st.session_state.properties.pop(index)
-                st.warning(f"🗑️ {p['name']} को सफलतापूर्वक हटा दिया गया है!")
+                st.warning("🗑️ प्रॉपर्टी को हटा दिया गया है!")
                 st.rerun()
                 
         st.write("---")
@@ -74,21 +73,17 @@ with tab2:
         submit_btn = st.form_submit_button("☁️ सुरक्षित लाइव सेव करें")
         if submit_btn:
             if n and r:
-                try:
-                    price_parsed = int(r)
-                except:
-                    price_parsed = 0
-                new_id = f"PROP-{random.randint(400, 999)}"
+                new_id = "PROP-" + str(random.randint(400, 999))
                 st.session_state.properties.append({
-                    "id": new_id, "name": n, "type": t, "area": a, "rate": str(price_parsed), "location": l, "owner": o
+                    "id": new_id, "name": n, "type": t, "area": a, "rate": r, "location": l, "owner": o
                 })
-                st.success(f"🎉 प्रॉपर्टी '{n}' सफलतापूर्वक जोड़ दी गई है!")
+                st.success("🎉 प्रॉपर्टी डेटाबेस में जोड़ दी गई है!")
                 st.balloons()
                 st.rerun()
             else:
-                st.error("कृपया प्रॉपर्टी का नाम और कीमत भरना सुनिश्चित करें!")
+                st.error("कृपया प्रॉपर्टी का नाम और कीमत जरूर भरें!")
 
-# ==================== टैब 3: बिलिंग और सीधा प्रिंटर बटन ====================
+# ==================== टैब 3: बिलिंग और प्रिंट आउट ====================
 with tab3:
     st.markdown("### 💳 न्यू डिजिटल इनवॉइस जनरेटर")
     
@@ -105,7 +100,7 @@ with tab3:
         disc = st.number_input("6. डिस्काउंट / छूट (₹)", min_value=0, value=0, step=1000)
         adv = st.number_input("7. एडवांस पेमेंट / बयाना (₹)", min_value=0, value=100000, step=5000)
 
-    # कैलकुलेशन
+    # साधारण बिना एरर वाली कैलकुलेशन
     final_total = base_price - disc
     pending_amount = final_total - adv
     current_date = datetime.now().strftime('%d-%m-%Y')
@@ -117,7 +112,7 @@ with tab3:
         if b_name == "":
             st.error("कृपया बिल बनाने के लिए प्रॉपर्टी का नाम लिखें!")
         else:
-            inv_id = f"INV-{random.randint(3000, 3999)}"
+            inv_id = "INV-" + str(random.randint(3000, 3999))
             st.session_state.active_bill = {
                 "id": inv_id, "date": current_date, "time": current_time,
                 "b_name": b_name, "b_loc": b_loc, "c_name": c_name, "c_phone": c_phone,
@@ -126,27 +121,36 @@ with tab3:
             st.session_state.bill_records.append({
                 "रसीद ID": inv_id, "तारीख": current_date, "प्रॉपर्टी": b_name, "कस्टमर": c_name, "बकाया राशि": pending_amount
             })
-            st.success("✅ डिजिटल रसीद जनरेट हो चुकी है!")
+            st.success("✅ डिजिटल रसीद तैयार! नीचे प्रिंट बटन दबाएं।")
 
-    # बिना किसी सिंटैक्स एरर के रसीद डिस्प्ले और प्रिंट
+    # रसीद दिखाने का सबसे सुरक्षित तरीका (बिना किसी String Literal Error के)
     if st.session_state.active_bill:
         rb = st.session_state.active_bill
         
-        st.write("### 🧾 जनरेटेड इनवॉइस")
+        st.write("### 🧾 || मां प्रॉपर्टीज इनवॉइस ||")
         
-        # प्रिंट ट्रिगर बटन
-        st.markdown('<button onclick="window.print()" style="background-color: #00ffcc; color: black; font-weight: bold; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">🖨️ रसीद सीधे प्रिंटर से प्रिंट करें</button>', unsafe_allow_html=True)
+        # सीधा ब्राउज़र/थर्मल प्रिंट कमांड बटन
+        st.markdown('<button onclick="window.print()" style="background-color: #00ffcc; color: black; font-weight: bold; padding: 12px 25px; border: none; border-radius: 4px; cursor: pointer; width: 100%;">🖨️ रसीद का पेपर प्रिंट आउट निकालें</button>', unsafe_allow_html=True)
+        st.write(" ")
         
-        # रसीद का साफ़-सुथरा लेआउट बॉक्स
-        st.info(f"📄 इनवॉइस नंबर: {rb['id']} | 📅 दिनांक: {rb['date']} | ⏰ समय: {rb['time']}")
+        # साफ-सुथरा बिना उलझन का लेआउट बॉक्स
+        st.info("📄 इनवॉइस नंबर: " + str(rb['id']) + "  |  📅 दिनांक: " + str(rb['date']) + "  |  ⏰ समय: " + str(rb['time']))
         
-        st.markdown(f"**🏢 प्रॉपर्टी:** {rb['b_name']} ({rb['b_loc']})")
-        st.markdown(f"**👤 ग्राहक:** {rb['c_name']} | 📞 **मोबाइल:** {rb['c_phone']}")
+        st.write("🏢 **प्रॉपर्टी का नाम:** " + str(rb['b_name']))
+        st.write("📍 **लोकेशन:** " + str(rb['b_loc']))
+        st.write("👤 **ग्राहक का नाम:** " + str(rb['c_name']))
+        st.write("📞 **मोबाइल नंबर:** " + str(rb['c_phone']))
         
         st.write("---")
-        st.write(f"🔸 **मूल सौदा राशि:** ₹{rb['base']:,}.00")
-        st.write(f"🔸 **विशेष छूट (Discount):** ₹{rb['disc']:,}.00")
-        st.success(f"🔹 **कुल फाइनल सौदा मूल्य:** ₹{rb['total']:,}.00")
-        st.write(f"🟩 **प्राप्त एडवांस (बयाना):** ₹{rb['adv']:,}.00")
-        st.error(f"🔴 **कुल बकाया राशि (PENDING DUE):
-            
+        st.write("🔸 **मूल सौदा राशि:** ₹" + str(rb['base']))
+        st.write("🔸 **विशेष छूट (Discount):** ₹" + str(rb['disc']))
+        st.success("🔹 **कुल फाइनल सौदा मूल्य:** ₹" + str(rb['total']))
+        st.write("🟩 **प्राप्त एडवांस राशि:** ₹" + str(rb['adv']))
+        st.error("🔴 **कुल बकाया राशि (PENDING DUE):** ₹" + str(rb['due']))
+        st.write("---")
+
+    # सुरक्षित बिल रिकॉर्ड रजिस्टर हिस्ट्री
+    st.write("---")
+    st.markdown("### 📁 सुरक्षित बिल रिकॉर्ड रजिस्टर")
+    if len(st.session_state.bill_records) > 0:
+        st.dataframe(pd.DataFrame(st.session_state.bill_records), use_container_width=True)
