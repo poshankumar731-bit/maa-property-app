@@ -37,7 +37,7 @@ if st.button("🔒 लॉगआउट"): st.session_state.logged_in = False; st.
 # डेटा मैनेजमेंट
 if 'bills' not in st.session_state: st.session_state.bills = []
 
-t1, t2 = st.tabs(["➕ नई रसीद", "📜 हिस्ट्री"])
+t1, t2 = st.tabs(["➕ नई रसीद", "📜 हिस्ट्री/मैनेजमेंट"])
 
 with t1:
     b_name = st.text_input("प्रॉपर्टी का नाम")
@@ -57,18 +57,18 @@ with t1:
         st.session_state.active_bill = new_bill
         st.success("रसीद तैयार है!")
 
-# बिल का स्वरूप (जो प्रिंट होगा)
+# बिल दिखाना
 if 'active_bill' in st.session_state:
     rb = st.session_state.active_bill
     st.markdown(f"""
-    <div class="printable-area print-container">
+    <div class="printable-area print-container" id="bill">
         <div class="header">MAA PROPERTIES MUNGELI</div>
         <div class="sub-header">Contact: +91 8109471091</div>
         <hr>
         <p><b>Invoice No:</b> {rb['id']} | <b>Date:</b> {rb['date']}</p>
         <p><b>Property:</b> {rb['b_name']}</p>
         <p><b>Buyer:</b> {rb['c_name']}</p>
-        <p><b>Buyer Mobile:</b> {rb['c_phone']}</p>
+        <p><b>Mobile:</b> {rb['c_phone']}</p>
         <p><b>Total Amount:</b> ₹{rb['base']:,}</p>
         <p><b>Balance Due:</b> ₹{rb['due']:,}</p>
         <br><br>
@@ -82,8 +82,19 @@ if 'active_bill' in st.session_state:
         </div>
     </div>
     """, unsafe_allow_html=True)
-    st.info("🖨️ प्रिंट करने के लिए अपने कीबोर्ड पर Ctrl + P दबाएं।")
+    
+    st.write("---")
+    st.info("🖨️ प्रिंट/PDF के लिए नीचे बटन दबाएं:")
+    # बटन दबाते ही प्रिंट विंडो खुलेगी
+    if st.button("🖨️ यहाँ क्लिक करके PDF/प्रिंट करें"):
+        st.write('<script>window.print()</script>', unsafe_allow_html=True)
 
 with t2:
+    st.subheader("📜 बिल हिस्ट्री")
     for i, b in enumerate(st.session_state.bills):
-        st.write(f"🆔 {b['id']} | 👤 {b['c_name']} | 🏢 {b['b_name']}")
+        col_list1, col_list2 = st.columns([4, 1])
+        col_list1.write(f"🆔 {b['id']} | 👤 {b['c_name']} | 🏢 {b['b_name']}")
+        if col_list2.button("🗑️ डिलीट", key=f"del_{i}"):
+            st.session_state.bills.pop(i)
+            st.rerun()
+    
