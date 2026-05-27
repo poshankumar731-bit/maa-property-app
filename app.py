@@ -4,19 +4,28 @@ from datetime import datetime
 
 st.set_page_config(page_title="Maa Property 2026", layout="wide")
 
-# प्रिंट स्टाइलिंग
-st.markdown("""
+# लोगो का लिंक (अपने लोगो की URL यहाँ डालें)
+logo_url = "https://img.freepik.com/free-vector/real-estate-logo-design_23-2148766468.jpg"
+
+# CSS: लोगो को बैकग्राउंड और नाम के साथ सेट करने के लिए
+st.markdown(f"""
 <style>
-    .print-area { width: 100%; max-width: 450px; border: 3px solid #000; padding: 25px; margin: auto; font-family: sans-serif; background: white; color: black; }
-    @media print {
-        body * { visibility: hidden; }
-        .printable, .printable * { visibility: visible; }
-        .printable { position: absolute; left: 0; top: 0; width: 100%; }
-    }
+    .print-area {{ 
+        width: 100%; max-width: 450px; border: 3px solid #000; padding: 25px; 
+        margin: auto; font-family: sans-serif; background-color: white;
+        background-image: url('{logo_url}'); background-size: 50%; 
+        background-repeat: no-repeat; background-position: center; opacity: 0.9;
+    }}
+    .header-box {{ display: flex; align-items: center; justify-content: center; gap: 15px; }}
+    @media print {{
+        body * {{ visibility: hidden; }}
+        .printable, .printable * {{ visibility: visible; }}
+        .printable {{ position: absolute; left: 0; top: 0; width: 100%; }}
+    }}
 </style>
 """, unsafe_allow_html=True)
 
-# लॉगिन
+# लॉगिन (यूजर आईडी और पासवर्ड)
 if 'logged_in' not in st.session_state: st.session_state.logged_in = False
 if not st.session_state.logged_in:
     u = st.text_input("यूजर आईडी")
@@ -25,16 +34,14 @@ if not st.session_state.logged_in:
         if u == "admin" and p == "12345": st.session_state.logged_in = True; st.rerun()
     st.stop()
 
-# डेटा
+# डेटा स्टोर
 if 'bills' not in st.session_state: st.session_state.bills = []
 
-st.title("⚡ MAA PROPERTIES MUNGELI - डैशबोर्ड")
+st.title("⚡ डैशबोर्ड")
 
-# डैशबोर्ड लेआउट: यहाँ से बिल जनरेट और हिस्ट्री मैनेज होगी
 tab1, tab2 = st.tabs(["📄 बिल जनरेट करें", "📜 बिल हिस्ट्री"])
 
 with tab1:
-    st.subheader("📝 नई रसीद का विवरण भरें")
     col1, col2 = st.columns(2)
     with col1:
         b_name = st.text_input("प्रॉपर्टी का नाम")
@@ -54,14 +61,16 @@ with tab1:
         }
         st.session_state.bills.append(new_bill)
         st.session_state.active_bill = new_bill
-        st.success("रसीद सफलतापूर्वक तैयार हो गई!")
+        st.success("रसीद तैयार है!")
 
-    # बिल का दृश्य (Printable)
     if 'active_bill' in st.session_state:
         rb = st.session_state.active_bill
         st.markdown(f"""
         <div class="printable print-area">
-            <h2 style="text-align:center;">MAA PROPERTIES MUNGELI</h2>
+            <div class="header-box">
+                <img src="{logo_url}" width="50">
+                <h2 style="margin:0;">MAA PROPERTIES MUNGELI</h2>
+            </div>
             <p style="text-align:center;"><b>Contact: 6264024293</b></p>
             <hr>
             <p><b>Inv:</b> {rb['id']} | <b>Date:</b> {rb['date']}</p>
@@ -79,10 +88,9 @@ with tab1:
         st.info("🖨️ प्रिंट करने के लिए Ctrl + P दबाएं।")
 
 with tab2:
-    st.subheader("📜 बिलों का रिकॉर्ड")
     for i, b in enumerate(st.session_state.bills):
         c1, c2 = st.columns([4, 1])
         c1.write(f"🆔 {b['id']} | 👤 {b['c_name']} | खसरा: {b['khasra']}")
-        if c2.button("🗑️ डिलीट", key=i):
+        if c2.button("🗑️ डिलीट", key=f"del_{i}"):
             st.session_state.bills.pop(i)
             st.rerun()
