@@ -1,31 +1,42 @@
 import streamlit as st
 import random
 from datetime import datetime
+import json
+import os
 
 # पेज सेटअप
 st.set_page_config(page_title="Maa Property 2026", layout="wide")
 
-# प्रोफेशनल प्रिंटिंग CSS (सिर्फ बिल प्रिंट होगा)
+# डेटा को फाइल में सेव करने का फंक्शन (ताकि डेटा कभी न कटे)
+DATA_FILE = "bills_history.json"
+
+def load_data():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    return []
+
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f)
+
+# हिस्ट्री लोड करें
+if 'bills' not in st.session_state:
+    st.session_state.bills = load_data()
+
+# प्रिंटिंग CSS
 st.markdown("""
 <style>
     @media print {
         .no-print, .no-print * { display: none !important; }
-        .print-only { 
-            display: block !important; 
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
+        .print-only { display: block !important; width: 100% !important; margin: 0 !important; }
         @page { size: A4 portrait; margin: 10mm; }
     }
-    .print-only { 
-        width: 100%; max-width: 480px; border: 2px solid #000; 
-        padding: 25px; margin: 10px auto; font-family: 'Arial', sans-serif;
-    }
+    .print-only { width: 100%; max-width: 480px; border: 2px solid #000; padding: 25px; margin: 10px auto; font-family: 'Arial', sans-serif; }
 </style>
 """, unsafe_allow_html=True)
 
-# लॉगिन सिस्टम
+# लॉगिन
 if 'logged_in' not in st.session_state: st.session_state.logged_in = False
 if not st.session_state.logged_in:
     u = st.text_input("यूजर आईडी")
@@ -34,18 +45,13 @@ if not st.session_state.logged_in:
         if u == "admin" and p == "12345": st.session_state.logged_in = True; st.rerun()
     st.stop()
 
-# बिलों का परमानेंट स्टोरेज (डेटा कभी नहीं कटेगा)
-if 'bills' not in st.session_state:
-    st.session_state.bills = []
-
 st.title("⚡ MAA PROPERTY DEALING MUNGELI")
 
-# 'no-print' सेक्शन: जो प्रिंट में नहीं आएगा
 st.markdown('<div class="no-print">', unsafe_allow_html=True)
 tab1, tab2 = st.tabs(["📄 बिल जनरेट करें", "📜 बिल हिस्ट्री"])
 
 with tab1:
-    st.subheader("📝 नई रसीद का विवरण")
+    st.subheader("📝 नई रसीद")
     c1, c2 = st.columns(2)
     with c1:
         b_name = st.text_input("प्रॉपर्टी का नाम")
@@ -64,22 +70,24 @@ with tab1:
             "base": base, "due": base - adv, "date": datetime.now().strftime('%d-%m-%Y')
         }
         st.session_state.bills.append(new_bill)
+        save_data(st.session_state.bills) # फाइल में सेव किया
         st.session_state.active_bill = new_bill
-        st.success("रसीद सेव हो गई है, अब हिस्ट्री में देखें!")
+        st.success("रसीद सुरक्षित हो गई है!")
 
 with tab2:
-    st.subheader("📜 सुरक्षित बिल हिस्ट्री")
+    st.subheader("📜 परमानेंट बिल हिस्ट्री")
     for i, b in enumerate(st.session_state.bills):
         c1, c2, c3 = st.columns([3, 1, 1])
         c1.write(f"🆔 {b['id']} | 👤 {b['c_name']}")
-        if c2.button("👁️ दिखाएं", key=f"view_{i}"):
+        if c2.button("👁️ देखें", key=f"view_{i}"):
             st.session_state.active_bill = b
         if c3.button("🗑️ डिलीट", key=f"del_{i}"):
             st.session_state.bills.pop(i)
+            save_data(st.session_state.bills) # अपडेटेड लिस्ट सेव की
             st.rerun()
 st.markdown('</div>', unsafe_allow_html=True)
 
-# केवल बिल वाला हिस्सा (print-only)
+# प्रिंट वाला हिस्सा
 if 'active_bill' in st.session_state:
     rb = st.session_state.active_bill
     st.markdown(f"""
@@ -89,11 +97,9 @@ if 'active_bill' in st.session_state:
         <p style="text-align:center; margin: 5px 0;"><b>Contact: 6264024293</b></p>
         <hr style="border-top: 2px solid #000; margin: 10px 0;">
         <p style="margin: 5px 0;"><b>Invoice No:</b> {rb['id']} &nbsp;&nbsp; <b>Date:</b> {rb['date']}</p>
-        <p style="margin: 5px 0;"><b>Property:</b> {rb['b_name']} (Khasra: {rb['khasra']})</p>
-        <p style="margin: 5px 0;"><b>Area:</b> {rb['area']} SqFt</p>
-        <p style="margin: 5px 0;"><b>Buyer:</b> {rb['c_name']}</p>
-        <p style="margin: 5px 0; font-size:18px;"><b>Total Amount:</b> ₹{rb['base']:,}</p>
-        <p style="margin: 5px 0; font-size:18px;"><b>Balance Due:</b> ₹{rb['due']:,}</p>
+        <p style="margin: 5px 0;"><b>Property:</b> {rb['b_name']} | <b>Khasra:</b> {rb['khasra']}</p>
+        <p style="margin: 5px 0;"><b>Area:</b> {rb['area']} SqFt | <b>Buyer:</b> {rb['c_name']}</p>
+        <p style="margin: 5px 0; font-size:18px;"><b>Total:</b> ₹{rb['base']:,} | <b>Due:</b> ₹{rb['due']:,}</p>
         <br>
         <div style="display:flex; justify-content: space-between; margin-top: 30px;">
             <div style="text-align:center;">_______<br>Buyer</div>
