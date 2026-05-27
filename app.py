@@ -4,10 +4,9 @@ from datetime import datetime
 
 st.set_page_config(page_title="Maa Property 2026", layout="wide")
 
-# प्रिंट के लिए एकदम सटीक CSS
+# प्रोफेशनल प्रिंटिंग CSS
 st.markdown("""
 <style>
-    /* प्रिंट करते समय पूरी स्क्रीन और प्रिंटिंग एरिया के लिए सेटिंग */
     @media print {
         .no-print, .no-print * { display: none !important; }
         .print-only { 
@@ -18,10 +17,7 @@ st.markdown("""
             padding: 0 !important;
         }
         @page { size: A4 portrait; margin: 5mm; }
-        body { margin: 0; padding: 0; }
     }
-    
-    /* स्क्रीन के लिए रसीद का स्टाइल */
     .print-only { 
         width: 100%; max-width: 450px; border: 2px solid #000; 
         padding: 20px; margin: 10px auto; font-family: 'Arial', sans-serif;
@@ -40,7 +36,7 @@ if not st.session_state.logged_in:
 
 if 'bills' not in st.session_state: st.session_state.bills = []
 
-st.title("⚡ MAA PROPERTIES MUNGELI")
+st.title("⚡ MAA PROPERTY DEALING MUNGELI")
 
 # 'no-print' सेक्शन: जो प्रिंट में नहीं आएगा
 st.markdown('<div class="no-print">', unsafe_allow_html=True)
@@ -78,8 +74,9 @@ if 'active_bill' in st.session_state:
     rb = st.session_state.active_bill
     st.markdown(f"""
     <div class="print-only">
-        <h1 style="text-align:center; font-size: 24px; margin: 0;">MAA PROPERTIES</h1>
-        <p style="text-align:center; margin: 0;"><b>MUNGELI | Contact: 6264024293</b></p>
+        <h1 style="text-align:center; font-size: 22px; margin: 0;">MAA PROPERTY DEALING</h1>
+        <h2 style="text-align:center; font-size: 18px; margin: 0;">MUNGELI</h2>
+        <p style="text-align:center; margin: 5px 0;"><b>Contact: 6264024293</b></p>
         <hr style="margin: 10px 0;">
         <p style="margin: 5px 0;"><b>Invoice No:</b> {rb['id']} &nbsp;&nbsp; <b>Date:</b> {rb['date']}</p>
         <p style="margin: 5px 0;"><b>Property:</b> {rb['b_name']} (Khasra: {rb['khasra']})</p>
@@ -93,4 +90,4 @@ if 'active_bill' in st.session_state:
         <p style="text-align:center; margin-top:20px; font-weight:bold;">Proprietor: VISHAL GUPTA</p>
     </div>
     """, unsafe_allow_html=True)
-    st.info("🖨️ प्रिंट करने के लिए Ctrl + P दबाएं।")
+    st.info("🖨️ प्रिंट के लिए Ctrl + P दबाएं। रसीद एक पेज पर परफेक्ट आएगी।")
