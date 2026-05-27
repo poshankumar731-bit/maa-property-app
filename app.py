@@ -4,7 +4,7 @@ from datetime import datetime
 
 st.set_page_config(page_title="Maa Property 2026", layout="wide")
 
-# प्रिंट के लिए CSS
+# प्रिंट स्टाइलिंग
 st.markdown("""
 <style>
     .print-area { width: 100%; max-width: 450px; border: 3px solid #000; padding: 25px; margin: auto; font-family: sans-serif; background: white; color: black; }
@@ -12,7 +12,6 @@ st.markdown("""
         body * { visibility: hidden; }
         .printable, .printable * { visibility: visible; }
         .printable { position: absolute; left: 0; top: 0; width: 100%; }
-        @page { size: auto; margin: 10mm; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -26,24 +25,28 @@ if not st.session_state.logged_in:
         if u == "admin" and p == "12345": st.session_state.logged_in = True; st.rerun()
     st.stop()
 
-# डेटा स्टोर
+# डेटा
 if 'bills' not in st.session_state: st.session_state.bills = []
 
-st.title("⚡ मां प्रॉपर्टी 2026")
+st.title("⚡ MAA PROPERTIES MUNGELI - डैशबोर्ड")
 
-tab1, tab2 = st.tabs(["➕ नई रसीद / एडिट", "📜 हिस्ट्री / डिलीट"])
+# डैशबोर्ड लेआउट: यहाँ से बिल जनरेट और हिस्ट्री मैनेज होगी
+tab1, tab2 = st.tabs(["📄 बिल जनरेट करें", "📜 बिल हिस्ट्री"])
 
 with tab1:
-    # अगर एडिट करना है तो डेटा भरें
-    b_name = st.text_input("प्रॉपर्टी का नाम")
-    khasra = st.text_input("खसरा नंबर")
-    area = st.text_input("एरिया (SqFt)")
-    c_name = st.text_input("खरीदार का नाम")
-    c_phone = st.text_input("खरीदार मोबाइल")
-    base = st.number_input("कुल राशि", value=0)
-    adv = st.number_input("एडवांस", value=0)
+    st.subheader("📝 नई रसीद का विवरण भरें")
+    col1, col2 = st.columns(2)
+    with col1:
+        b_name = st.text_input("प्रॉपर्टी का नाम")
+        khasra = st.text_input("खसरा नंबर")
+        area = st.text_input("एरिया (SqFt)")
+    with col2:
+        c_name = st.text_input("खरीदार का नाम")
+        c_phone = st.text_input("खरीदार मोबाइल", value="6264024293")
+        base = st.number_input("कुल राशि", value=0)
+        adv = st.number_input("एडवांस", value=0)
     
-    if st.button("रसीद सेव करें"):
+    if st.button("✅ रसीद तैयार करें"):
         new_bill = {
             "id": random.randint(1000, 9999), "b_name": b_name.upper(), "khasra": khasra,
             "area": area, "c_name": c_name.upper(), "c_phone": c_phone, 
@@ -51,8 +54,9 @@ with tab1:
         }
         st.session_state.bills.append(new_bill)
         st.session_state.active_bill = new_bill
-        st.success("रसीद सेव हो गई!")
+        st.success("रसीद सफलतापूर्वक तैयार हो गई!")
 
+    # बिल का दृश्य (Printable)
     if 'active_bill' in st.session_state:
         rb = st.session_state.active_bill
         st.markdown(f"""
@@ -69,13 +73,13 @@ with tab1:
             <div style="display:flex; justify-content: space-between;">
                 <div>_______<br>Buyer</div><div>_______<br>Seller</div>
             </div>
-            <p style="text-align:center;"><b>Proprietor: VISHAL GUPTA</b></p>
+            <p style="text-align:center; margin-top:20px;"><b>Proprietor: VISHAL GUPTA</b></p>
         </div>
         """, unsafe_allow_html=True)
         st.info("🖨️ प्रिंट करने के लिए Ctrl + P दबाएं।")
 
 with tab2:
-    st.subheader("📜 बिल हिस्ट्री (यहाँ से डिलीट करें)")
+    st.subheader("📜 बिलों का रिकॉर्ड")
     for i, b in enumerate(st.session_state.bills):
         c1, c2 = st.columns([4, 1])
         c1.write(f"🆔 {b['id']} | 👤 {b['c_name']} | खसरा: {b['khasra']}")
